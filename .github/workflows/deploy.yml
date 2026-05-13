@@ -1,0 +1,44 @@
+name: 🚀 Deploy to Hostland — practicai.ru
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: FTP Deploy → practicai.ru
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Установить зависимости Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 🔧 npm install (production)
+        run: npm ci --omit=dev
+
+      - name: 📡 FTP Deploy → ftp7.hostland.ru
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server:      ftp7.hostland.ru
+          username:    host1688282_practicai
+          password:    ${{ secrets.FTP_PASSWORD }}
+          port:        21
+          protocol:    ftp
+          server-dir:  /practicai.ru/htdocs/www/
+          local-dir:   ./
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            .env
+            .env.example
+            README.md
+            *.log

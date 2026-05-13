@@ -1,0 +1,2 @@
+# PracticAI
+сайт под Cloude

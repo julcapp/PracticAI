@@ -14,14 +14,27 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 📦 Установить зависимости Node.js
+      - name: 📦 npm install (production)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: 🔧 npm install (production)
+      - name: 🔧 Install dependencies
         run: npm ci --omit=dev
+
+      - name: 📝 Создать .env файл
+        run: |
+          cat > .env << EOF
+          NODE_ENV=production
+          PORT=3000
+          ALLOWED_ORIGIN=https://practicai.ru
+          DB_HOST=localhost
+          DB_USER=host1688282_practicai
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=host1688282_practicai
+          DB_PORT=3306
+          EOF
 
       - name: 📡 FTP Deploy → ftp7.hostland.ru
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -38,7 +51,6 @@ jobs:
             **/.git*
             **/.git*/**
             .github/**
-            .env
             .env.example
             README.md
             *.log

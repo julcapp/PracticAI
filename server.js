@@ -1,46 +1,45 @@
 'use strict';
 
-const express    = require('express');
-const path       = require('path');
-const helmet     = require('helmet');
-const cors       = require('cors');
-const rateLimit  = require('express-rate-limit');
-require('dotenv').config();
+const express   = require('express');
+const path      = require('path');
+const helmet    = require('helmet');
+const cors      = require('cors');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const app  = express();
+const app = express();
+
+// ─────────────────────────────────────────────
+//  PASSENGER — слушаем переданный сокет/порт
+//  Hostland запускает приложение через Passenger,
+//  он передаёт PORT или сокет автоматически
+// ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 
 // ─────────────────────────────────────────────
 //  MIDDLEWARE
 // ─────────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false }));
 
-// Безопасность: HTTP-заголовки
-app.use(helmet({
-  contentSecurityPolicy: false, // отключаем CSP чтобы не ломать inline-стили/скрипты в index.html
-}));
-
-// CORS — разрешаем только свой домен
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || 'https://practicai.ru',
   methods: ['GET', 'POST'],
 }));
 
-// Парсинг JSON и form-data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ограничение запросов для API (защита от спама)
+// Rate-limit для API
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
-  max: 20,                   // не более 20 запросов с одного IP
+  windowMs: 15 * 60 * 1000,
+  max: 20,
   message: { error: 'Слишком много запросов. Попробуйте через 15 минут.' },
 });
 app.use('/api/', apiLimiter);
 
-// Логирование запросов
+// Логирование
 app.use((req, _res, next) => {
-  const ts = new Date().toISOString();
-  console.log(`[${ts}] ${req.method} ${req.url} — ${req.ip}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
@@ -48,8 +47,8 @@ app.use((req, _res, next) => {
 //  СТАТИКА — папка public/
 // ─────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '1d',          // браузер кэширует статику на 1 день
-  etag:   true,
+  maxAge: '1d',
+  etag: true,
 }));
 
 // ─────────────────────────────────────────────
@@ -58,19 +57,18 @@ app.use(express.static(path.join(__dirname, 'public'), {
 const contactRouter = require('./routes/contact');
 const healthRouter  = require('./routes/health');
 
-app.use('/api/contact', contactRouter); // POST /api/contact — форма обратной связи
-app.use('/api/health',  healthRouter);  // GET  /api/health  — статус сервера + БД
+app.use('/api/contact', contactRouter);
+app.use('/api/health',  healthRouter);
 
 // ─────────────────────────────────────────────
-//  SPA FALLBACK — всегда отдаём index.html
-//  (нужно если добавим React/Vue Router)
+//  FALLBACK — отдаём index.html для всех маршрутов
 // ─────────────────────────────────────────────
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─────────────────────────────────────────────
-//  ГЛОБАЛЬНАЯ ОБРАБОТКА ОШИБОК
+//  ОБРАБОТКА ОШИБОК
 // ─────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error('[ERROR]', err.message);
@@ -79,10 +77,16 @@ app.use((err, _req, res, _next) => {
 
 // ─────────────────────────────────────────────
 //  ЗАПУСК
+//  Passenger сам вызывает listen — просто экспортируем app.
+//  Для локального запуска (node server.js) слушаем PORT.
 // ─────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅ PracticAI сервер запущен: http://localhost:${PORT}`);
-  console.log(`   Режим: ${process.env.NODE_ENV || 'development'}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✅ PracticAI запущен: http://localhost:${PORT}`);
+    console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   DB: ${process.env.DB_NAME || 'не задана'}`);
+  });
+}
 
+// Passenger требует экспорта приложения
 module.exports = app;

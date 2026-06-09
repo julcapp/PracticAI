@@ -19,19 +19,19 @@ jobs:
         with:
           node-version: '25'
 
-      - name: 🔧 Install dependencies (включая node_modules для деплоя)
+      - name: 🔧 Install dependencies
         run: npm install --omit=dev
 
       - name: 📝 Создать .env
         run: |
           printf 'NODE_ENV=production\nPORT=3000\nALLOWED_ORIGIN=https://practicai.ru\nDB_HOST=localhost\nDB_USER=host1688282_practicai\nDB_PASSWORD=%s\nDB_NAME=host1688282_practicai\nDB_PORT=3306\n' "${{ secrets.DB_PASSWORD }}" > .env
 
-      - name: 🔄 Обновить tmp/restart.txt
+      - name: 🔄 Обновить tmp/restart.txt (перезапуск Passenger)
         run: |
           mkdir -p tmp
           date > tmp/restart.txt
 
-      - name: 📡 FTP Deploy → ftp7.hostland.ru
+      - name: 📡 FTP Deploy → /practicai.ru/projects/www/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -39,7 +39,9 @@ jobs:
           password:    ${{ secrets.FTP_PASSWORD }}
           port:        21
           protocol:    ftp
-          server-dir:  /practicai.ru/htdocs/www/
+          # ✅ Правильный путь согласно документации hostland:
+          # /home/host1688282/practicai.ru/projects/www/
+          server-dir:  /practicai.ru/projects/www/
           local-dir:   ./
           dangerous-clean-slate: false
           exclude: |

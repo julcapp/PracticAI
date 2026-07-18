@@ -1,0 +1,19 @@
+name: 🔍 Diagnose Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Check site response
+        run: |
+          echo "=== HTTP Response ==="
+          curl -v -L --max-time 15 "http://practicai.ru/" 2>&1 | head -60
+          echo ""
+          echo "=== HTTPS Response ==="
+          curl -v -L --max-time 15 -k "https://practicai.ru/" 2>&1 | head -60
+          echo ""
+          echo "=== /api/health ==="
+          curl -v --max-time 15 -k "https://practicai.ru/api/health" 2>&1 | head -30

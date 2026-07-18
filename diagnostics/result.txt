@@ -1,10 +1,10 @@
 === ДАТА ===
-Sat Jul 18 12:39:11 UTC 2026
+Sat Jul 18 12:45:31 UTC 2026
 
-=== HTTP статус practicai.ru ===
+=== HTTP ответ ===
 HTTP/2 200 
 server: nginx
-date: Sat, 18 Jul 2026 12:39:11 GMT
+date: Sat, 18 Jul 2026 12:45:31 GMT
 content-type: text/plain; charset=utf-8
 vary: Accept-Encoding
 status: 200 OK
@@ -12,51 +12,74 @@ x-powered-by: Phusion Passenger(R)
 strict-transport-security: max-age=31536000
 
 
-=== Тело ответа (первые 800 байт) ===
+=== Тело ===
 Поздравляем Вас! Nodejs настроен, отредактируйте файл server.js для запуска своего проекта
 
-=== FTP: /practicai.ru/ ===
-projects
-..
-node
-htdocs
-logs
-.
-
-=== FTP: /practicai.ru/htdocs/ ===
-www
-..
-test
-.
-
-=== FTP: /practicai.ru/htdocs/www/ ===
-index.html
-..
-.ftp-deploy-sync-state.json
-.
-
-=== FTP: /practicai.ru/projects/ ===
+=== FTP: все каталоги в projects/ ===
 www
 ..
 digital
 .
 
-=== FTP: /practicai.ru/projects/www/ ===
-migrate.php
-.nvmrc
-db.js
+=== FTP: чтение passenger_log через FTP ===
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+App 334342 output: [Auth] Missing session cookie
+
+=== FTP: projects/www/tmp/ ===
 ..
-node_modules
-.ftp-deploy-sync-state.json
-public
-tmp
-.node-version
-migrations
-.env
-migrate.js
-diag_result.md
-routes
-package-lock.json
+restart.txt
 .
-package.json
+
+=== FTP: все каталоги в projects/digital/ (если есть) ===
+..
+tmp
+.
 server.js

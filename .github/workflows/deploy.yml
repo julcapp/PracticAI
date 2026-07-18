@@ -27,6 +27,7 @@ jobs:
           cat > .env << EOF
           NODE_ENV=production
           PORT=3000
+          ALLOWED_ORIGIN=https://practicai.ru
           DB_HOST=localhost
           DB_USER=host1688282_practicai
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -34,17 +35,17 @@ jobs:
           DB_PORT=3306
           EOF
 
+      - name: 📄 Скопировать .htaccess в корень
+        run: cp htdocs_only/.htaccess .htaccess
+
       - name: 🔄 Обновить tmp/restart.txt
         run: |
           mkdir -p tmp
           date +%s > tmp/restart.txt
 
-      # Копируем .htaccess в корень проекта (он уйдёт в htdocs/www/)
-      - name: 📋 Подготовить .htaccess
-        run: cp htdocs_only/.htaccess .htaccess
-
-      # ВСЁ приложение → /htdocs/www/ (и DocumentRoot и AppRoot)
-      - name: 📡 Deploy всего приложения → /htdocs/www/
+      # Деплоим всё в htdocs/www/ — там уже лежит наш проект
+      # и именно отсюда Passenger запускает server.js
+      - name: 📡 Deploy → /htdocs/www/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -64,4 +65,4 @@ jobs:
             *.log
             node_modules/.cache/**
             htdocs_only/**
-            diag_result.md
+            diagnostics/**

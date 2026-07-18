@@ -1,20 +1,24 @@
 # Diagnostic Report
-Generated: Sat Jul 18 12:01:08 UTC 2026
+Generated: Sat Jul 18 12:07:33 UTC 2026
 
 ## HTTP practicai.ru
-HTTP Code: 200
+HTTP Code: 403
 Body:
-Поздравляем Вас! Nodejs настроен, отредактируйте файл server.js для запуска своего проекта
+<html>
+<head><title>403 Forbidden</title></head>
+<body>
+<center><h1>403 Forbidden</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
 
 ## Response Headers
-HTTP/1.1 200 OK
+HTTP/1.1 403 Forbidden
 Server: nginx
-Date: Sat, 18 Jul 2026 12:01:09 GMT
-Content-Type: text/plain; charset=utf-8
+Date: Sat, 18 Jul 2026 12:07:34 GMT
+Content-Type: text/html
+Content-Length: 146
 Connection: keep-alive
-Vary: Accept-Encoding
-Status: 200 OK
-X-Powered-By: Phusion Passenger(R)
 
 
 ## FTP /practicai.ru/
@@ -32,12 +36,22 @@ test
 .
 
 ## FTP /practicai.ru/htdocs/www/
+migrate.php
+.nvmrc
 .well-known
+db.js
 ..
 node_modules
 .ftp-deploy-sync-state.json
 diag.txt
+public
+tmp
 .env.example
+.node-version
+migrations
+.env
+migrate.js
+routes
 cgi-bin
 .
 .htaccess
@@ -69,4 +83,10 @@ package.json
 server.js
 
 ## /api/health
-Поздравляем Вас! Nodejs настроен, отредактируйте файл server.js для запуска своего проекта
+<html>
+<head><title>403 Forbidden</title></head>
+<body>
+<center><h1>403 Forbidden</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>

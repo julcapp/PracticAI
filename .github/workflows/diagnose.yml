@@ -7,13 +7,58 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔍 Check site response
+      - name: 🔍 Check site + FTP structure
         run: |
-          echo "=== HTTP Response ==="
-          curl -v -L --max-time 15 "http://practicai.ru/" 2>&1 | head -60
+          echo "=== HTTP practicai.ru ==="
+          HTTP=$(curl -s -o /tmp/body.txt -w "%{http_code}" --max-time 15 "http://practicai.ru/")
+          echo "HTTP Code: $HTTP"
+          echo "Body:"
+          cat /tmp/body.txt | head -20
+
           echo ""
-          echo "=== HTTPS Response ==="
-          curl -v -L --max-time 15 -k "https://practicai.ru/" 2>&1 | head -60
+          echo "=== HTTPS practicai.ru ==="
+          HTTPS=$(curl -sk -o /tmp/body_ssl.txt -w "%{http_code}" --max-time 15 "https://practicai.ru/")
+          echo "HTTPS Code: $HTTPS"
+          echo "Body:"
+          cat /tmp/body_ssl.txt | head -20
+
+          echo ""
+          echo "=== Response Headers ==="
+          curl -sI --max-time 10 "http://practicai.ru/" 2>&1
+
           echo ""
           echo "=== /api/health ==="
-          curl -v --max-time 15 -k "https://practicai.ru/api/health" 2>&1 | head -30
+          curl -sk --max-time 10 "https://practicai.ru/api/health" || echo "FAIL"
+
+      - name: 📂 FTP listing via curl
+        env:
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "=== FTP: /practicai.ru/ ==="
+          curl -s --max-time 15 \
+            "ftp://ftp7.hostland.ru/practicai.ru/" \
+            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+
+          echo ""
+          echo "=== FTP: /practicai.ru/htdocs/ ==="
+          curl -s --max-time 15 \
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
+            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+
+          echo ""
+          echo "=== FTP: /practicai.ru/htdocs/www/ ==="
+          curl -s --max-time 15 \
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
+            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+
+          echo ""
+          echo "=== FTP: /practicai.ru/projects/ ==="
+          curl -s --max-time 15 \
+            "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
+            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+
+          echo ""
+          echo "=== FTP: /practicai.ru/projects/www/ ==="
+          curl -s --max-time 15 \
+            "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
+            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"

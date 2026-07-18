@@ -5,9 +5,9 @@ RewriteEngine on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
 
-# Passenger: запускаем server.js из текущей директории (htdocs/www/)
+# Passenger: app.js — стандартный стартовый файл
 PassengerAppType node
-PassengerStartupFile server.js
+PassengerStartupFile app.js
 PassengerNodejs /home/host1688282/practicai.ru/node/v25.2.0/bin/node
 PassengerResolveSymlinksInDocumentRoot on
 

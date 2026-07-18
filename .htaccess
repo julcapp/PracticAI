@@ -1,0 +1,15 @@
+# Phusion Passenger — Node.js на hostland.ru
+
+# HTTP → HTTPS
+RewriteEngine on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+# Passenger: app.js — стандартный стартовый файл
+PassengerAppType node
+PassengerStartupFile app.js
+PassengerNodejs /home/host1688282/practicai.ru/node/v25.2.0/bin/node
+PassengerResolveSymlinksInDocumentRoot on
+
+Require all granted
+Options -MultiViews

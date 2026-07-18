@@ -1,10 +1,10 @@
 === ДАТА ===
-Sat Jul 18 12:28:14 UTC 2026
+Sat Jul 18 12:39:11 UTC 2026
 
 === HTTP статус practicai.ru ===
 HTTP/2 200 
 server: nginx
-date: Sat, 18 Jul 2026 12:28:15 GMT
+date: Sat, 18 Jul 2026 12:39:11 GMT
 content-type: text/plain; charset=utf-8
 vary: Accept-Encoding
 status: 200 OK
@@ -30,30 +30,10 @@ test
 .
 
 === FTP: /practicai.ru/htdocs/www/ ===
-migrate.php
-.nvmrc
-.well-known
-db.js
-app.js
+index.html
 ..
-node_modules
 .ftp-deploy-sync-state.json
-diag.txt
-public
-tmp
-.env.example
-.node-version
-migrations
-.env
-migrate.js
-diag_result.md
-routes
-cgi-bin
-package-lock.json
 .
-package.json
-server.js
-.htaccess
 
 === FTP: /practicai.ru/projects/ ===
 www

@@ -1,41 +1,34 @@
 'use strict';
 
-const express   = require('express');
-const path      = require('path');
-const helmet    = require('helmet');
-const cors      = require('cors');
+const express  = require('express');
+const path     = require('path');
+const helmet   = require('helmet');
+const cors     = require('cors');
 const rateLimit = require('express-rate-limit');
+
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const app = express();
-
-// ─────────────────────────────────────────────
-//  PASSENGER — слушаем переданный сокет/порт
-//  Hostland запускает приложение через Passenger,
-//  он передаёт PORT или сокет автоматически
-// ─────────────────────────────────────────────
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ─────────────────────────────────────────────
-//  MIDDLEWARE
-// ─────────────────────────────────────────────
+// ── Middleware ─────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || 'https://practicai.ru',
-  methods: ['GET', 'POST'],
+  origin: ['https://practicai.ru', 'http://practicai.ru'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rate-limit для API
-const apiLimiter = rateLimit({
+app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: { error: 'Слишком много запросов. Попробуйте через 15 минут.' },
-});
-app.use('/api/', apiLimiter);
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 
 // Логирование
 app.use((req, _res, next) => {
@@ -43,50 +36,42 @@ app.use((req, _res, next) => {
   next();
 });
 
-// ─────────────────────────────────────────────
-//  СТАТИКА — папка public/
-// ─────────────────────────────────────────────
+// ── Статика ────────────────────────────────────────
+// ВАЖНО: статику отдаём из папки public/
+// Passenger смотрит на public/ как DocumentRoot
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '1d',
   etag: true,
+  maxAge: '1h',
 }));
 
-// ─────────────────────────────────────────────
-//  РОУТЫ API
-// ─────────────────────────────────────────────
-const contactRouter = require('./routes/contact');
+// ── API роуты ──────────────────────────────────────
 const healthRouter  = require('./routes/health');
+const contactRouter = require('./routes/contact');
 
-app.use('/api/contact', contactRouter);
 app.use('/api/health',  healthRouter);
+app.use('/api/contact', contactRouter);
 
-// ─────────────────────────────────────────────
-//  FALLBACK — отдаём index.html для всех маршрутов
-// ─────────────────────────────────────────────
+// ── SPA fallback ───────────────────────────────────
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ─────────────────────────────────────────────
-//  ОБРАБОТКА ОШИБОК
-// ─────────────────────────────────────────────
+// ── Обработка ошибок ───────────────────────────────
 app.use((err, _req, res, _next) => {
-  console.error('[ERROR]', err.message);
+  console.error('[ERROR]', err.stack || err.message);
   res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
-// ─────────────────────────────────────────────
-//  ЗАПУСК
-//  Passenger сам вызывает listen — просто экспортируем app.
-//  Для локального запуска (node server.js) слушаем PORT.
-// ─────────────────────────────────────────────
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`✅ PracticAI запущен: http://localhost:${PORT}`);
-    console.log(`   NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`   DB: ${process.env.DB_NAME || 'не задана'}`);
-  });
-}
+// ── Запуск ─────────────────────────────────────────
+// Passenger: требует экспорта app И вызова listen
+// При работе через Passenger порт игнорируется,
+// но listen() вызвать необходимо
+app.listen(PORT, () => {
+  console.log(`✅ PracticAI запущен на порту ${PORT}`);
+  console.log(`   NODE_ENV:  ${process.env.NODE_ENV || 'development'}`);
+  console.log(`   Node.js:   ${process.version}`);
+  console.log(`   __dirname: ${__dirname}`);
+});
 
-// Passenger требует экспорта приложения
+// Экспорт для Passenger
 module.exports = app;

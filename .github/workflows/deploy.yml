@@ -1,4 +1,4 @@
-name: 🚀 Deploy to Hostland — practicai.ru
+name: 🚀 Deploy PracticAI → Hostland
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: FTP Deploy → practicai.ru
+    name: Build & FTP Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -19,19 +19,28 @@ jobs:
         with:
           node-version: '25'
 
-      - name: 🔧 Install dependencies
+      - name: 🔧 npm install (production deps + node_modules для сервера)
         run: npm install --omit=dev
 
       - name: 📝 Создать .env
         run: |
-          printf 'NODE_ENV=production\nPORT=3000\nALLOWED_ORIGIN=https://practicai.ru\nDB_HOST=localhost\nDB_USER=host1688282_practicai\nDB_PASSWORD=%s\nDB_NAME=host1688282_practicai\nDB_PORT=3306\n' "${{ secrets.DB_PASSWORD }}" > .env
+          cat > .env << EOF
+          NODE_ENV=production
+          PORT=3000
+          ALLOWED_ORIGIN=https://practicai.ru
+          DB_HOST=localhost
+          DB_USER=host1688282_practicai
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=host1688282_practicai
+          DB_PORT=3306
+          EOF
 
-      - name: 🔄 Обновить tmp/restart.txt (перезапуск Passenger)
+      - name: 🔄 Обновить tmp/restart.txt → перезапуск Passenger
         run: |
           mkdir -p tmp
-          date > tmp/restart.txt
+          date +%s > tmp/restart.txt
 
-      - name: 📡 FTP Deploy → /practicai.ru/projects/www/
+      - name: 📡 Deploy → /practicai.ru/projects/www/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -39,8 +48,6 @@ jobs:
           password:    ${{ secrets.FTP_PASSWORD }}
           port:        21
           protocol:    ftp
-          # ✅ Правильный путь согласно документации hostland:
-          # /home/host1688282/practicai.ru/projects/www/
           server-dir:  /practicai.ru/projects/www/
           local-dir:   ./
           dangerous-clean-slate: false

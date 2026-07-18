@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────
+#  Phusion Passenger — Node.js на hostland.ru
+#  Этот файл ОБЯЗАТЕЛЕН для запуска Node.js через Apache
+# ─────────────────────────────────────────────────────
+
+# Перенаправление HTTP → HTTPS
+RewriteEngine on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+# Passenger: указываем что это Node.js приложение
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerAppRoot /home/host1688282/practicai.ru/projects/www
+PassengerNodejs /home/host1688282/practicai.ru/node/v25.2.0/bin/node
+PassengerResolveSymlinksInDocumentRoot on
+
+Require all granted
+Options -MultiViews

@@ -24,24 +24,16 @@ jobs:
 
       - name: 📝 Создать .env
         run: |
-          cat > .env << 'EOF'
-          NODE_ENV=production
-          PORT=3000
-          ALLOWED_ORIGIN=https://practicai.ru
-          DB_HOST=localhost
-          DB_USER=host1688282_practicai
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_NAME=host1688282_practicai
-          DB_PORT=3306
-          EOF
+          printf 'NODE_ENV=production\nPORT=3000\nALLOWED_ORIGIN=https://practicai.ru\nDB_HOST=localhost\nDB_USER=host1688282_practicai\nDB_PASSWORD=%s\nDB_NAME=host1688282_practicai\nDB_PORT=3306\n' \
+            "${{ secrets.DB_PASSWORD }}" > .env
 
       - name: 🔄 Обновить tmp/restart.txt
         run: |
           mkdir -p tmp
           date +%s > tmp/restart.txt
 
-      # Деплоим приложение в /projects/www/ — это AppRoot для Passenger
-      - name: 📡 Deploy приложение → /projects/www/
+      # ✅ Правильный каталог: projects/digital/ (именно его указали в панели hostland)
+      - name: 📡 Deploy → /practicai.ru/projects/digital/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -49,7 +41,7 @@ jobs:
           password:    ${{ secrets.FTP_PASSWORD }}
           port:        21
           protocol:    ftp
-          server-dir:  /practicai.ru/projects/www/
+          server-dir:  /practicai.ru/projects/digital/
           local-dir:   ./
           dangerous-clean-slate: false
           exclude: |
@@ -63,22 +55,3 @@ jobs:
             htdocs_only/**
             diagnostics/**
             .htaccess
-
-      # Деплоим пустой index.html в htdocs/www/
-      # чтобы Apache не показывал старый контент
-      - name: 📄 Подготовить htdocs заглушку
-        run: |
-          mkdir -p htdocs_deploy
-          echo "" > htdocs_deploy/index.html
-
-      - name: 📡 Очистить htdocs/www/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server:      ftp7.hostland.ru
-          username:    host1688282_practicai
-          password:    ${{ secrets.FTP_PASSWORD }}
-          port:        21
-          protocol:    ftp
-          server-dir:  /practicai.ru/htdocs/www/
-          local-dir:   ./htdocs_deploy/
-          dangerous-clean-slate: true

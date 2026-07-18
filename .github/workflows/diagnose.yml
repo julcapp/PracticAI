@@ -6,73 +6,51 @@ on:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 🔍 Run diagnostics
-        env:
-          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+      - uses: actions/checkout@v4
+      
+      - name: 🔍 Собрать диагностику
         run: |
-          {
-            echo "# Diagnostic Report"
-            echo "Generated: $(date -u)"
-            echo ""
+          mkdir -p diagnostics
+          
+          echo "=== HTTP ответ practicai.ru ===" > diagnostics/result.txt
+          curl -sI --max-time 20 https://practicai.ru/ >> diagnostics/result.txt 2>&1
+          
+          echo "" >> diagnostics/result.txt
+          echo "=== Тело ответа (500 байт) ===" >> diagnostics/result.txt
+          curl -sL --max-time 20 https://practicai.ru/ 2>&1 | head -c 500 >> diagnostics/result.txt
+          
+          echo "" >> diagnostics/result.txt
+          echo "=== FTP: корень ===" >> diagnostics/result.txt
+          curl -s --list-only "ftp://ftp7.hostland.ru/" \
+            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
+          
+          echo "" >> diagnostics/result.txt
+          echo "=== FTP: practicai.ru/ ===" >> diagnostics/result.txt
+          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/" \
+            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
+          
+          echo "" >> diagnostics/result.txt
+          echo "=== FTP: htdocs/www/ ===" >> diagnostics/result.txt
+          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
+            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
 
-            echo "## HTTP practicai.ru"
-            HTTP_CODE=$(curl -s -o /tmp/http_body.txt -w "%{http_code}" \
-              --max-time 15 "http://practicai.ru/" 2>&1)
-            echo "HTTP Code: $HTTP_CODE"
-            echo "Body:"
-            cat /tmp/http_body.txt | head -c 500
-            echo ""
-
-            echo "## Response Headers"
-            curl -sI --max-time 10 "http://practicai.ru/" 2>&1
-            echo ""
-
-            echo "## FTP /practicai.ru/"
-            curl -sl --max-time 20 \
-              --ftp-pasv \
-              "ftp://ftp7.hostland.ru/practicai.ru/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
-            echo ""
-
-            echo "## FTP /practicai.ru/htdocs/"
-            curl -sl --max-time 20 --ftp-pasv \
-              "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
-            echo ""
-
-            echo "## FTP /practicai.ru/htdocs/www/"
-            curl -sl --max-time 20 --ftp-pasv \
-              "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
-            echo ""
-
-            echo "## FTP /practicai.ru/projects/"
-            curl -sl --max-time 20 --ftp-pasv \
-              "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
-            echo ""
-
-            echo "## FTP /practicai.ru/projects/www/"
-            curl -sl --max-time 20 --ftp-pasv \
-              "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
-            echo ""
-
-            echo "## /api/health"
-            curl -sk --max-time 10 "https://practicai.ru/api/health" 2>&1 || echo "FAIL"
-
-          } > diag_result.md
-
-      - name: 💾 Commit diagnostic result to repo
+          echo "" >> diagnostics/result.txt
+          echo "=== FTP: projects/www/ ===" >> diagnostics/result.txt
+          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
+            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
+          
+          echo "" >> diagnostics/result.txt
+          echo "=== FTP: htdocs/ ===" >> diagnostics/result.txt  
+          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
+            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
+          
+          cat diagnostics/result.txt
+      
+      - name: 📤 Пушим результат в репо
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git add diag_result.md
-          git commit -m "🔍 Diagnostic result $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "No changes"
-          git push
+          git add diagnostics/result.txt
+          git commit -m "🔍 Diagnostic results $(date)" || echo "No changes"
+          git push origin main

@@ -27,7 +27,6 @@ jobs:
           cat > .env << EOF
           NODE_ENV=production
           PORT=3000
-          ALLOWED_ORIGIN=https://practicai.ru
           DB_HOST=localhost
           DB_USER=host1688282_practicai
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -40,8 +39,12 @@ jobs:
           mkdir -p tmp
           date +%s > tmp/restart.txt
 
-      # ШАГ 1: Приложение → /projects/www/ (AppRoot для Passenger)
-      - name: 📡 Deploy приложение → /projects/www/
+      # Копируем .htaccess в корень проекта (он уйдёт в htdocs/www/)
+      - name: 📋 Подготовить .htaccess
+        run: cp htdocs_only/.htaccess .htaccess
+
+      # ВСЁ приложение → /htdocs/www/ (и DocumentRoot и AppRoot)
+      - name: 📡 Deploy всего приложения → /htdocs/www/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -49,7 +52,7 @@ jobs:
           password:    ${{ secrets.FTP_PASSWORD }}
           port:        21
           protocol:    ftp
-          server-dir:  /practicai.ru/projects/www/
+          server-dir:  /practicai.ru/htdocs/www/
           local-dir:   ./
           dangerous-clean-slate: false
           exclude: |
@@ -61,16 +64,4 @@ jobs:
             *.log
             node_modules/.cache/**
             htdocs_only/**
-
-      # ШАГ 2: .htaccess → /htdocs/www/ (DocumentRoot Apache)
-      - name: 📡 Deploy .htaccess → /htdocs/www/
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server:      ftp7.hostland.ru
-          username:    host1688282_practicai
-          password:    ${{ secrets.FTP_PASSWORD }}
-          port:        21
-          protocol:    ftp
-          server-dir:  /practicai.ru/htdocs/www/
-          local-dir:   ./htdocs_only/
-          dangerous-clean-slate: false
+            diag_result.md

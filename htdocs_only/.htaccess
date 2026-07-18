@@ -1,16 +1,12 @@
 # Phusion Passenger + Node.js — hostland.ru
-
 PassengerAppType node
 PassengerStartupFile server.js
-PassengerAppRoot /home/host1688282/practicai.ru/projects/www
+PassengerAppRoot /home/host1688282/practicai.ru/htdocs/www
 PassengerNodejs /home/host1688282/practicai.ru/node/v25.2.0/bin/node
 PassengerFriendlyErrorPages on
 PassengerResolveSymlinksInDocumentRoot on
-PassengerMaxPoolSize 2
-PassengerMinInstances 1
 
 SetEnv NODE_ENV production
-SetEnv PORT 3000
 
 Options -MultiViews
 Require all granted

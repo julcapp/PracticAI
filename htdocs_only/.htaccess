@@ -1,0 +1,18 @@
+# Phusion Passenger — Node.js на hostland.ru
+# Этот файл лежит в DocumentRoot (/htdocs/www/)
+# и говорит Apache передавать запросы в Node.js приложение
+
+# HTTP → HTTPS редирект
+RewriteEngine on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+# Passenger директивы
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerAppRoot /home/host1688282/practicai.ru/projects/www
+PassengerNodejs /home/host1688282/practicai.ru/node/v25.2.0/bin/node
+PassengerResolveSymlinksInDocumentRoot on
+
+Require all granted
+Options -MultiViews

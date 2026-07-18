@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '25'
 
-      - name: 🔧 npm install (production deps + node_modules для сервера)
+      - name: 🔧 npm install
         run: npm install --omit=dev
 
       - name: 📝 Создать .env
@@ -35,12 +35,13 @@ jobs:
           DB_PORT=3306
           EOF
 
-      - name: 🔄 Обновить tmp/restart.txt → перезапуск Passenger
+      - name: 🔄 Обновить tmp/restart.txt
         run: |
           mkdir -p tmp
           date +%s > tmp/restart.txt
 
-      - name: 📡 Deploy → /practicai.ru/projects/www/
+      # ШАГ 1: Приложение → /projects/www/ (AppRoot для Passenger)
+      - name: 📡 Deploy приложение → /projects/www/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -59,3 +60,17 @@ jobs:
             README.md
             *.log
             node_modules/.cache/**
+            htdocs_only/**
+
+      # ШАГ 2: .htaccess → /htdocs/www/ (DocumentRoot Apache)
+      - name: 📡 Deploy .htaccess → /htdocs/www/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server:      ftp7.hostland.ru
+          username:    host1688282_practicai
+          password:    ${{ secrets.FTP_PASSWORD }}
+          port:        21
+          protocol:    ftp
+          server-dir:  /practicai.ru/htdocs/www/
+          local-dir:   ./htdocs_only/
+          dangerous-clean-slate: false

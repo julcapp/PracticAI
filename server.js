@@ -1,42 +1,50 @@
 'use strict';
 
-// Загружаем .env если есть
-try {
-  require('dotenv').config();
-} catch(e) {}
+const express  = require('express');
+const path     = require('path');
+const helmet   = require('helmet');
+const cors     = require('cors');
+const rateLimit = require('express-rate-limit');
 
-const express = require('express');
-const path    = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// Статика
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({
+  origin: ['https://practicai.ru', 'http://practicai.ru'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-// API health (простейший, без БД)
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    time:   new Date().toISOString(),
-    node:   process.version,
-    env:    process.env.NODE_ENV || 'unknown',
-    dir:    __dirname,
-  });
-});
+// Статика из папки public/
+app.use(express.static(path.join(__dirname, 'public'), { etag: true }));
 
-// Fallback
-app.get('*', (req, res) => {
+// API
+const healthRouter  = require('./routes/health');
+const contactRouter = require('./routes/contact');
+app.use('/api/health',  healthRouter);
+app.use('/api/contact', contactRouter);
+
+// SPA fallback
+app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ВАЖНО для Passenger: вызываем listen()
-const server = app.listen(PORT, () => {
-  console.log('PracticAI started port=' + PORT + ' node=' + process.version);
+// Ошибки
+app.use((err, _req, res, _next) => {
+  console.error('[ERROR]', err.message);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
-server.on('error', (err) => {
-  console.error('Server error:', err.message);
+// Запуск — Passenger требует и listen() и module.exports
+const server = app.listen(PORT, () => {
+  console.log(`PracticAI running on port ${PORT}`);
+  console.log(`Node: ${process.version}, DIR: ${__dirname}`);
 });
 
 module.exports = app;

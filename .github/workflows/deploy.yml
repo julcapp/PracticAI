@@ -24,7 +24,7 @@ jobs:
 
       - name: 📝 Создать .env
         run: |
-          cat > .env << EOF
+          cat > .env << 'EOF'
           NODE_ENV=production
           PORT=3000
           ALLOWED_ORIGIN=https://practicai.ru
@@ -35,17 +35,13 @@ jobs:
           DB_PORT=3306
           EOF
 
-      - name: 📄 Скопировать .htaccess в корень
-        run: cp htdocs_only/.htaccess .htaccess
-
       - name: 🔄 Обновить tmp/restart.txt
         run: |
           mkdir -p tmp
           date +%s > tmp/restart.txt
 
-      # Деплоим всё в htdocs/www/ — там уже лежит наш проект
-      # и именно отсюда Passenger запускает server.js
-      - name: 📡 Deploy → /htdocs/www/
+      # Деплоим приложение в /projects/www/ — это AppRoot для Passenger
+      - name: 📡 Deploy приложение → /projects/www/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -53,7 +49,7 @@ jobs:
           password:    ${{ secrets.FTP_PASSWORD }}
           port:        21
           protocol:    ftp
-          server-dir:  /practicai.ru/htdocs/www/
+          server-dir:  /practicai.ru/projects/www/
           local-dir:   ./
           dangerous-clean-slate: false
           exclude: |
@@ -66,3 +62,23 @@ jobs:
             node_modules/.cache/**
             htdocs_only/**
             diagnostics/**
+            .htaccess
+
+      # Деплоим пустой index.html в htdocs/www/
+      # чтобы Apache не показывал старый контент
+      - name: 📄 Подготовить htdocs заглушку
+        run: |
+          mkdir -p htdocs_deploy
+          echo "" > htdocs_deploy/index.html
+
+      - name: 📡 Очистить htdocs/www/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server:      ftp7.hostland.ru
+          username:    host1688282_practicai
+          password:    ${{ secrets.FTP_PASSWORD }}
+          port:        21
+          protocol:    ftp
+          server-dir:  /practicai.ru/htdocs/www/
+          local-dir:   ./htdocs_deploy/
+          dangerous-clean-slate: true

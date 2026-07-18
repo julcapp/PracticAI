@@ -1,5 +1,5 @@
 # Diagnostic Report
-Generated: Sat Jul 18 11:53:49 UTC 2026
+Generated: Sat Jul 18 11:56:57 UTC 2026
 
 ## HTTP practicai.ru
 HTTP Code: 200
@@ -9,7 +9,7 @@ Body:
 ## Response Headers
 HTTP/1.1 200 OK
 Server: nginx
-Date: Sat, 18 Jul 2026 11:53:50 GMT
+Date: Sat, 18 Jul 2026 11:56:58 GMT
 Content-Type: text/plain; charset=utf-8
 Connection: keep-alive
 Vary: Accept-Encoding
@@ -38,9 +38,7 @@ node_modules
 .ftp-deploy-sync-state.json
 diag.txt
 .env.example
-index.php
 cgi-bin
-index.htm
 .
 .htaccess
 
@@ -63,6 +61,7 @@ tmp
 migrations
 .env
 migrate.js
+diag_result.md
 routes
 package-lock.json
 .

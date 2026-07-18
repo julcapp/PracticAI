@@ -14,45 +14,46 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: 🔍 Собрать диагностику
-        id: diag
         run: |
           mkdir -p diagnostics
           {
             echo "=== ДАТА ==="
             date
+            
             echo ""
-            echo "=== HTTP статус practicai.ru ==="
-            curl -sI --max-time 20 https://practicai.ru/ || echo "CURL ERROR"
+            echo "=== HTTP ответ ==="
+            curl -sI --max-time 20 https://practicai.ru/
+            
             echo ""
-            echo "=== Тело ответа (первые 800 байт) ==="
-            curl -sL --max-time 20 https://practicai.ru/ | head -c 800 || echo "CURL ERROR"
+            echo "=== Тело ==="
+            curl -sL --max-time 20 https://practicai.ru/ | head -c 500
+            
             echo ""
-            echo "=== FTP: /practicai.ru/ ==="
-            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
-            echo ""
-            echo "=== FTP: /practicai.ru/htdocs/ ==="
-            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
-            echo ""
-            echo "=== FTP: /practicai.ru/htdocs/www/ ==="
-            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
-            echo ""
-            echo "=== FTP: /practicai.ru/projects/ ==="
+            echo "=== FTP: все каталоги в projects/ ==="
             curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+              --user "host1688282_practicai:Farpost100!@" --max-time 20
+            
             echo ""
-            echo "=== FTP: /practicai.ru/projects/www/ ==="
-            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+            echo "=== FTP: чтение passenger_log через FTP ==="
+            curl -s "ftp://ftp7.hostland.ru/../passenger_log" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 | tail -50 || echo "недоступен"
+            
+            echo ""
+            echo "=== FTP: projects/www/tmp/ ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/www/tmp/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20
+            
+            echo ""
+            echo "=== FTP: все каталоги в projects/digital/ (если есть) ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/digital/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "нет"
+              
           } > diagnostics/result.txt 2>&1
-          
           cat diagnostics/result.txt
 
-      - name: 💾 Сохранить результат в репо
+      - name: 💾 Коммит результата
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
           git add diagnostics/result.txt
-          git diff --staged --quiet || git commit -m "🔍 Diagnostic $(date +%Y%m%d-%H%M%S)" && git push
+          git diff --staged --quiet || (git commit -m "diag $(date +%s)" && git push)

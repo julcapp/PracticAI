@@ -7,58 +7,39 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔍 Check site + FTP structure
-        run: |
-          echo "=== HTTP practicai.ru ==="
-          HTTP=$(curl -s -o /tmp/body.txt -w "%{http_code}" --max-time 15 "http://practicai.ru/")
-          echo "HTTP Code: $HTTP"
-          echo "Body:"
-          cat /tmp/body.txt | head -20
-
-          echo ""
-          echo "=== HTTPS practicai.ru ==="
-          HTTPS=$(curl -sk -o /tmp/body_ssl.txt -w "%{http_code}" --max-time 15 "https://practicai.ru/")
-          echo "HTTPS Code: $HTTPS"
-          echo "Body:"
-          cat /tmp/body_ssl.txt | head -20
-
-          echo ""
-          echo "=== Response Headers ==="
-          curl -sI --max-time 10 "http://practicai.ru/" 2>&1
-
-          echo ""
-          echo "=== /api/health ==="
-          curl -sk --max-time 10 "https://practicai.ru/api/health" || echo "FAIL"
-
-      - name: 📂 FTP listing via curl
+      - name: 🔍 Full Diagnosis
         env:
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "=== FTP: /practicai.ru/ ==="
-          curl -s --max-time 15 \
-            "ftp://ftp7.hostland.ru/practicai.ru/" \
-            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+          # HTTP check
+          echo "## 🌐 HTTP Response" >> $GITHUB_STEP_SUMMARY
+          HTTP_CODE=$(curl -s -o /tmp/http_body.txt -w "%{http_code}" --max-time 15 "http://practicai.ru/" 2>&1)
+          echo "**HTTP Code:** $HTTP_CODE" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          head -5 /tmp/http_body.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
-          echo ""
-          echo "=== FTP: /practicai.ru/htdocs/ ==="
-          curl -s --max-time 15 \
-            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
-            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+          # Headers
+          echo "## 📋 Response Headers" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          curl -sI --max-time 10 "http://practicai.ru/" >> $GITHUB_STEP_SUMMARY 2>&1
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
-          echo ""
-          echo "=== FTP: /practicai.ru/htdocs/www/ ==="
-          curl -s --max-time 15 \
-            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
-            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+          # FTP listings
+          echo "## 📂 FTP Structure" >> $GITHUB_STEP_SUMMARY
+          for dir in "/practicai.ru/" "/practicai.ru/htdocs/" "/practicai.ru/htdocs/www/" "/practicai.ru/projects/" "/practicai.ru/projects/www/"; do
+            echo "### $dir" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            curl -sl --max-time 15 \
+              "ftp://ftp7.hostland.ru${dir}" \
+              --user "host1688282_practicai:${FTP_PASS}" >> $GITHUB_STEP_SUMMARY 2>&1 || echo "TIMEOUT/ERR" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          done
 
-          echo ""
-          echo "=== FTP: /practicai.ru/projects/ ==="
-          curl -s --max-time 15 \
-            "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
-            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+          # /api/health
+          echo "## 💊 /api/health" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          curl -sk --max-time 10 "https://practicai.ru/api/health" >> $GITHUB_STEP_SUMMARY 2>&1 || echo "FAIL" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
-          echo ""
-          echo "=== FTP: /practicai.ru/projects/www/ ==="
-          curl -s --max-time 15 \
-            "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
-            --user "host1688282_practicai:${FTP_PASS}" || echo "FTP ERR"
+          echo "✅ Diagnostic complete"

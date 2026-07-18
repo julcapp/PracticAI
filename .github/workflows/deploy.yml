@@ -32,8 +32,28 @@ jobs:
           mkdir -p tmp
           date +%s > tmp/restart.txt
 
-      # ✅ Правильный каталог: projects/digital/ (именно его указали в панели hostland)
-      - name: 📡 Deploy → /practicai.ru/projects/digital/
+      - name: 📡 Deploy → /projects/www/
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server:      ftp7.hostland.ru
+          username:    host1688282_practicai
+          password:    ${{ secrets.FTP_PASSWORD }}
+          port:        21
+          protocol:    ftp
+          server-dir:  /practicai.ru/projects/www/
+          local-dir:   ./
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*/**
+            .github/**
+            .env.example
+            README.md
+            *.log
+            node_modules/.cache/**
+            htdocs_only/**
+            diagnostics/**
+
+      - name: 📡 Deploy → /projects/digital/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ftp7.hostland.ru
@@ -45,7 +65,6 @@ jobs:
           local-dir:   ./
           dangerous-clean-slate: false
           exclude: |
-            **/.git*
             **/.git*/**
             .github/**
             .env.example
@@ -54,4 +73,3 @@ jobs:
             node_modules/.cache/**
             htdocs_only/**
             diagnostics/**
-            .htaccess

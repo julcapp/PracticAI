@@ -6,61 +6,73 @@ on:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: 🔍 Run diagnostics & upload result via FTP
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 Run diagnostics
         env:
           FTP_PASS: ${{ secrets.FTP_PASSWORD }}
         run: |
-          # Собираем диагностику
           {
-            echo "=== TIMESTAMP ==="
-            date
+            echo "# Diagnostic Report"
+            echo "Generated: $(date -u)"
+            echo ""
 
+            echo "## HTTP practicai.ru"
+            HTTP_CODE=$(curl -s -o /tmp/http_body.txt -w "%{http_code}" \
+              --max-time 15 "http://practicai.ru/" 2>&1)
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Body:"
+            cat /tmp/http_body.txt | head -c 500
             echo ""
-            echo "=== HTTP practicai.ru ==="
-            HTTP_CODE=$(curl -s -o /tmp/http_body.txt -w "%{http_code}" --max-time 15 "http://practicai.ru/" 2>&1)
-            echo "Code: $HTTP_CODE"
-            echo "Body first 200 chars:"
-            head -c 200 /tmp/http_body.txt
 
-            echo ""
-            echo ""
-            echo "=== HTTP HEADERS ==="
+            echo "## Response Headers"
             curl -sI --max-time 10 "http://practicai.ru/" 2>&1
-
             echo ""
-            echo "=== FTP /practicai.ru/ ==="
-            curl -sl --max-time 15 "ftp://ftp7.hostland.ru/practicai.ru/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
 
+            echo "## FTP /practicai.ru/"
+            curl -sl --max-time 20 \
+              --ftp-pasv \
+              "ftp://ftp7.hostland.ru/practicai.ru/" \
+              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
             echo ""
-            echo "=== FTP /practicai.ru/htdocs/ ==="
-            curl -sl --max-time 15 "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
 
+            echo "## FTP /practicai.ru/htdocs/"
+            curl -sl --max-time 20 --ftp-pasv \
+              "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
+              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
             echo ""
-            echo "=== FTP /practicai.ru/htdocs/www/ ==="
-            curl -sl --max-time 15 "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
 
+            echo "## FTP /practicai.ru/htdocs/www/"
+            curl -sl --max-time 20 --ftp-pasv \
+              "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
+              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
             echo ""
-            echo "=== FTP /practicai.ru/projects/ ==="
-            curl -sl --max-time 15 "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
-              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
 
+            echo "## FTP /practicai.ru/projects/"
+            curl -sl --max-time 20 --ftp-pasv \
+              "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
+              --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
             echo ""
-            echo "=== FTP /practicai.ru/projects/www/ ==="
-            curl -sl --max-time 15 "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
+
+            echo "## FTP /practicai.ru/projects/www/"
+            curl -sl --max-time 20 --ftp-pasv \
+              "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
               --user "host1688282_practicai:${FTP_PASS}" 2>&1 || echo "ERR"
+            echo ""
 
-          } > /tmp/diag_result.txt
+            echo "## /api/health"
+            curl -sk --max-time 10 "https://practicai.ru/api/health" 2>&1 || echo "FAIL"
 
-          echo "=== Diagnostic result ==="
-          cat /tmp/diag_result.txt
+          } > diag_result.md
 
-          echo ""
-          echo "=== Uploading to FTP ==="
-          curl -T /tmp/diag_result.txt \
-            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/diag.txt" \
-            --user "host1688282_practicai:${FTP_PASS}" \
-            --max-time 30 && echo "FTP upload OK" || echo "FTP upload FAIL"
+      - name: 💾 Commit diagnostic result to repo
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add diag_result.md
+          git commit -m "🔍 Diagnostic result $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "No changes"
+          git push

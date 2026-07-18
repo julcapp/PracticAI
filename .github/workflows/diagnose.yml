@@ -6,50 +6,53 @@ on:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: 🔍 Собрать диагностику
+        id: diag
         run: |
           mkdir -p diagnostics
+          {
+            echo "=== ДАТА ==="
+            date
+            echo ""
+            echo "=== HTTP статус practicai.ru ==="
+            curl -sI --max-time 20 https://practicai.ru/ || echo "CURL ERROR"
+            echo ""
+            echo "=== Тело ответа (первые 800 байт) ==="
+            curl -sL --max-time 20 https://practicai.ru/ | head -c 800 || echo "CURL ERROR"
+            echo ""
+            echo "=== FTP: /practicai.ru/ ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+            echo ""
+            echo "=== FTP: /practicai.ru/htdocs/ ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+            echo ""
+            echo "=== FTP: /practicai.ru/htdocs/www/ ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+            echo ""
+            echo "=== FTP: /practicai.ru/projects/ ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+            echo ""
+            echo "=== FTP: /practicai.ru/projects/www/ ==="
+            curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
+              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "FTP ERROR"
+          } > diagnostics/result.txt 2>&1
           
-          echo "=== HTTP ответ practicai.ru ===" > diagnostics/result.txt
-          curl -sI --max-time 20 https://practicai.ru/ >> diagnostics/result.txt 2>&1
-          
-          echo "" >> diagnostics/result.txt
-          echo "=== Тело ответа ===" >> diagnostics/result.txt
-          curl -sL --max-time 20 https://practicai.ru/ 2>&1 | head -c 1000 >> diagnostics/result.txt
-          
-          echo "" >> diagnostics/result.txt
-          echo "=== FTP: practicai.ru/ ===" >> diagnostics/result.txt
-          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/" \
-            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
-          
-          echo "" >> diagnostics/result.txt
-          echo "=== FTP: htdocs/ ===" >> diagnostics/result.txt  
-          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/" \
-            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
-
-          echo "" >> diagnostics/result.txt
-          echo "=== FTP: htdocs/www/ ===" >> diagnostics/result.txt
-          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
-            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
-
-          echo "" >> diagnostics/result.txt
-          echo "=== FTP: projects/ ===" >> diagnostics/result.txt
-          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
-            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
-          
-          echo "" >> diagnostics/result.txt
-          echo "=== FTP: projects/www/ ===" >> diagnostics/result.txt
-          curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
-            --user "host1688282_practicai:Farpost100!@" --max-time 20 >> diagnostics/result.txt 2>&1
-
           cat diagnostics/result.txt
-      
-      - name: 📦 Сохранить как артефакт
-        uses: actions/upload-artifact@v4
-        with:
-          name: diagnostic-results
-          path: diagnostics/result.txt
-          retention-days: 1
+
+      - name: 💾 Сохранить результат в репо
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add diagnostics/result.txt
+          git diff --staged --quiet || git commit -m "🔍 Diagnostic $(date +%Y%m%d-%H%M%S)" && git push

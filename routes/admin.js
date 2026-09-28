@@ -32,7 +32,7 @@ function equal(a,b) {
 function authenticate(req,res,next) {
   const user=process.env.ADMIN_USER;
   const pass=process.env.ADMIN_PASSWORD;
-  if (!user || !pass || pass.length<16) return res.status(503).json({error:'Доступ администратора ещё не настроен'});
+  if (!user || !pass || pass.length<9) return res.status(503).json({error:'Доступ администратора ещё не настроен'});
   const header=req.get('authorization')||'';
   let decoded='';
   if (header.startsWith('Basic ')) {

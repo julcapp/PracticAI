@@ -1,0 +1,94 @@
+'use strict';
+const router = require('express').Router();
+const crypto = require('crypto');
+const db = require('../db');
+
+const schema = `CREATE TABLE IF NOT EXISTS site_content (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  slug VARCHAR(80) NOT NULL UNIQUE,
+  placement ENUM('main','education') NOT NULL DEFAULT 'main',
+  title VARCHAR(200) NOT NULL,
+  body TEXT NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  published TINYINT(1) NOT NULL DEFAULT 1,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_placement_order (placement,sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
+const textSchema = `CREATE TABLE IF NOT EXISTS site_texts (
+  text_key VARCHAR(80) NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
+let initialized;
+function ensureSchema() {
+  if (!initialized) initialized = Promise.all([db.query(schema),db.query(textSchema)]).catch(e => { initialized = null; throw e; });
+  return initialized;
+}
+function equal(a,b) {
+  const x=crypto.createHash('sha256').update(a).digest();
+  const y=crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(x,y);
+}
+function authenticate(req,res,next) {
+  const user=process.env.ADMIN_USER;
+  const pass=process.env.ADMIN_PASSWORD;
+  if (!user || !pass || pass.length<16) return res.status(503).json({error:'Доступ администратора ещё не настроен'});
+  const header=req.get('authorization')||'';
+  let decoded='';
+  if (header.startsWith('Basic ')) {
+    try { decoded=Buffer.from(header.slice(6),'base64').toString('utf8'); } catch (_) { /* invalid */ }
+  }
+  const split=decoded.indexOf(':');
+  const enteredUser=split<0?'':decoded.slice(0,split);
+  const enteredPass=split<0?'':decoded.slice(split+1);
+  if (!equal(enteredUser,user) || !equal(enteredPass,pass)) {
+    res.set('WWW-Authenticate','Basic realm="PracticAI CRM", charset="UTF-8"');
+    return res.status(401).json({error:'Требуется вход администратора'});
+  }
+  if (!['GET','HEAD','OPTIONS'].includes(req.method)) {
+    const origin=req.get('origin');
+    const expected=process.env.SITE_ORIGIN || 'https://practicai.ru';
+    if (origin && origin!==expected && origin!=='http://localhost:3000') return res.status(403).json({error:'Недопустимый источник запроса'});
+    if (!req.is('application/json') || req.get('x-requested-with')!=='PracticAI-CRM') return res.status(415).json({error:'Ожидается запрос CRM в формате JSON'});
+  }
+  res.set('Cache-Control','no-store');
+  next();
+}
+router.use(authenticate);
+router.get('/session',(_req,res)=>res.json({ok:true}));
+const editableKeys = ['main_title','main_contact_intro','education_title','education_intro'];
+router.get('/texts',async(_req,res,next)=>{
+  try { await ensureSchema();const [rows]=await db.execute('SELECT text_key,value FROM site_texts');res.json({texts:Object.fromEntries(rows.map(r=>[r.text_key,r.value]))}); }catch(e){next(e)}
+});
+router.put('/texts',async(req,res,next)=>{
+  const entries=Object.entries(req.body);
+  if (!entries.length || entries.some(([k,v])=>!editableKeys.includes(k)||typeof v!=='string'||v.length>3000))return res.status(400).json({error:'Недопустимое поле или слишком длинный текст'});
+  try { await ensureSchema();for(const [key,value] of entries)await db.execute('INSERT INTO site_texts (text_key,value) VALUES (?,?) ON DUPLICATE KEY UPDATE value=VALUES(value)',[key,value.trim()]);res.json({ok:true}); }catch(e){next(e)}
+});
+router.get('/content',async(_req,res,next)=>{
+  try { await ensureSchema(); const [rows]=await db.execute('SELECT id,slug,placement,title,body,sort_order,published,updated_at FROM site_content ORDER BY placement,sort_order,id');res.json({sections:rows}); } catch(e){next(e)}
+});
+function validate(data){
+  const {slug,placement,title,body,sort_order,published}=data;
+  if(typeof slug!=='string'||!/^[a-z0-9-]{2,80}$/.test(slug)||!['main','education'].includes(placement)||typeof title!=='string'||!title.trim()||title.length>200||typeof body!=='string'||body.length>10000||!Number.isInteger(sort_order)||Math.abs(sort_order)>10000||![0,1,false,true].includes(published))return false;
+  return true;
+}
+router.post('/content',async(req,res,next)=>{
+  if(!validate(req.body))return res.status(400).json({error:'Проверьте поля раздела'});
+  try{await ensureSchema();const d=req.body;const [r]=await db.execute('INSERT INTO site_content (slug,placement,title,body,sort_order,published) VALUES (?,?,?,?,?,?)',[d.slug,d.placement,d.title.trim(),d.body.trim(),d.sort_order,Number(d.published)]);res.status(201).json({id:r.insertId});}catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код раздела уже существует'});next(e)}
+});
+router.put('/content/:id',async(req,res,next)=>{
+  if(!validate(req.body))return res.status(400).json({error:'Проверьте поля раздела'});
+  try{await ensureSchema();const d=req.body;const [r]=await db.execute('UPDATE site_content SET slug=?,placement=?,title=?,body=?,sort_order=?,published=? WHERE id=?',[d.slug,d.placement,d.title.trim(),d.body.trim(),d.sort_order,Number(d.published),req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Раздел не найден'});res.json({ok:true});}catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код раздела уже существует'});next(e)}
+});
+router.delete('/content/:id',async(req,res,next)=>{
+  try{await ensureSchema();await db.execute('DELETE FROM site_content WHERE id=?',[req.params.id]);res.json({ok:true});}catch(e){next(e)}
+});
+router.get('/contacts',async(_req,res,next)=>{
+  try{const [rows]=await db.execute('SELECT id,name,phone,email,message,status,created_at,updated_at FROM contacts ORDER BY created_at DESC LIMIT 200');res.json({contacts:rows});}catch(e){next(e)}
+});
+router.patch('/contacts/:id',async(req,res,next)=>{
+  if(!['new','read','replied'].includes(req.body.status))return res.status(400).json({error:'Недопустимый статус'});
+  try{const [r]=await db.execute('UPDATE contacts SET status=? WHERE id=?',[req.body.status,req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Обращение не найдено'});res.json({ok:true});}catch(e){next(e)}
+});
+module.exports={router,authenticate,ensureSchema};

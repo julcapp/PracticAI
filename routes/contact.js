@@ -12,13 +12,13 @@ router.post('/', async (req, res) => {
   const { name, phone, email, message } = req.body;
 
   // ── Валидация ──────────────────────────────
-  if (!name || !phone || !message) {
+  if (typeof name !== 'string' || typeof phone !== 'string' || typeof message !== 'string' || !name.trim() || !phone.trim() || !message.trim()) {
     return res.status(400).json({
       error: 'Заполните обязательные поля: имя, телефон, сообщение',
     });
   }
 
-  if (name.length > 100 || message.length > 2000) {
+  if (name.length > 100 || phone.length > 30 || message.length > 2000 || (email && (typeof email !== 'string' || email.length > 150))) {
     return res.status(400).json({ error: 'Слишком длинные данные' });
   }
 
@@ -54,16 +54,6 @@ router.post('/', async (req, res) => {
  * Список всех заявок (только для внутреннего использования)
  * TODO: добавить авторизацию перед выводом в продакшн
  */
-router.get('/', async (_req, res) => {
-  try {
-    const [rows] = await db.execute(
-      'SELECT id, name, phone, email, message, created_at FROM contacts ORDER BY created_at DESC LIMIT 100'
-    );
-    return res.json({ contacts: rows });
-  } catch (err) {
-    console.error('[contact] DB error:', err.message);
-    return res.status(500).json({ error: 'Ошибка загрузки данных' });
-  }
-});
+router.get('/', (_req, res) => res.status(403).json({ error: 'Доступ к обращениям только через CRM' }));
 
 module.exports = router;

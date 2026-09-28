@@ -2,6 +2,7 @@
 
 const express  = require('express');
 const path     = require('path');
+const fs       = require('fs');
 const helmet   = require('helmet');
 const cors     = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -22,17 +23,29 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
 // Статика из папки public/
-app.use(express.static(path.join(__dirname, 'public'), { etag: true }));
+const { router: adminRouter, authenticate } = require('./routes/admin');
+const publicDir = path.join(__dirname, 'public');
+app.get('/admin', authenticate, (_req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
+app.get('/admin.html', authenticate, (_req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
+app.get('/', (_req, res, next) => {
+  fs.readFile(path.join(publicDir, 'index.html'), 'utf8', (error, html) => {
+    if (error) return next(error);
+    res.type('html').send(html.replace('</body>', '<script src="/site-enhancements.js" defer></script></body>'));
+  });
+});
+app.use(express.static(publicDir, { etag: true, index: false }));
 
 // API
 const healthRouter  = require('./routes/health');
 const contactRouter = require('./routes/contact');
 app.use('/api/health',  healthRouter);
 app.use('/api/contact', contactRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/content', require('./routes/content'));
 
 // SPA fallback
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.status(404).send('Страница не найдена');
 });
 
 // Ошибки

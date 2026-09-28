@@ -79,7 +79,12 @@ router.get('/diagnostics',async(_req,res)=>{
     try { await db.query(query);checks[key]='ok'; }
     catch (e) { checks[key]=e.code||'error'; }
   }
-  try { await ensureSchema();checks.schema_creation='ok'; }
+  try {
+    await ensureSchema();
+    checks.schema_creation='ok';
+    await db.query('SELECT id,status FROM contacts LIMIT 0');
+    checks.contacts='ok';
+  }
   catch (e) { checks.schema_creation=e.code||'error'; }
   return res.json({checks});
 });

@@ -14,6 +14,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: 🔍 Собрать диагностику
+        env:
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
           mkdir -p diagnostics
           {
@@ -31,22 +33,22 @@ jobs:
             echo ""
             echo "=== FTP: все каталоги в projects/ ==="
             curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20
+              --user "host1688282_practicai:${FTP_PASSWORD}" --max-time 20
             
             echo ""
             echo "=== FTP: чтение passenger_log через FTP ==="
             curl -s "ftp://ftp7.hostland.ru/../passenger_log" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 | tail -50 || echo "недоступен"
+              --user "host1688282_practicai:${FTP_PASSWORD}" --max-time 20 | tail -50 || echo "недоступен"
             
             echo ""
             echo "=== FTP: projects/www/tmp/ ==="
             curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/www/tmp/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20
+              --user "host1688282_practicai:${FTP_PASSWORD}" --max-time 20
             
             echo ""
             echo "=== FTP: все каталоги в projects/digital/ (если есть) ==="
             curl -s --list-only "ftp://ftp7.hostland.ru/practicai.ru/projects/digital/" \
-              --user "host1688282_practicai:Farpost100!@" --max-time 20 || echo "нет"
+              --user "host1688282_practicai:${FTP_PASSWORD}" --max-time 20 || echo "нет"
               
           } > diagnostics/result.txt 2>&1
           cat diagnostics/result.txt

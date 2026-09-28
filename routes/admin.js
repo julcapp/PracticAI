@@ -19,9 +19,20 @@ const textSchema = `CREATE TABLE IF NOT EXISTS site_texts (
   value TEXT NOT NULL,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
+const contactsSchema = `CREATE TABLE IF NOT EXISTS contacts (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  email VARCHAR(150) NULL,
+  message TEXT NOT NULL,
+  status ENUM('new','read','replied') NOT NULL DEFAULT 'new',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_contacts_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
 let initialized;
 function ensureSchema() {
-  if (!initialized) initialized = Promise.all([db.query(schema),db.query(textSchema)]).catch(e => { initialized = null; throw e; });
+  if (!initialized) initialized = Promise.all([db.query(schema),db.query(textSchema),db.query(contactsSchema)]).catch(e => { initialized = null; throw e; });
   return initialized;
 }
 function equal(a,b) {

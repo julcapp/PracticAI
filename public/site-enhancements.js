@@ -15,15 +15,16 @@
       block.append(h,p,a);target.before(block);
     }
     const form=document.querySelector('#contact .contact-form');
+    for(const el of document.querySelectorAll('#contact .contact-detail'))if(el.textContent.includes('+7 (495) 000-00-00'))el.remove();
     if(form){
       const inputs=form.querySelectorAll('input,textarea');const button=form.querySelector('button');
       if(inputs.length>=4&&button){
         button.removeAttribute('onclick');
         const consent=document.createElement('label');consent.style.cssText='display:block;font-size:14px;margin:15px 0';
         const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.required=true;checkbox.style.cssText='width:auto;margin-right:8px';
-        consent.append(checkbox,document.createTextNode('Согласен на обработку данных для ответа на обращение.'));button.before(consent);
+        consent.append(checkbox,document.createTextNode('Согласен на обработку моего имени, телефона, email и сообщения ООО «Цифрономика» для ответа на обращение.'));button.before(consent);
         const status=document.createElement('p');status.setAttribute('role','status');button.after(status);
-        button.onclick=async()=>{if(!checkbox.checked){status.textContent='Подтвердите согласие на обработку данных.';return}button.disabled=true;status.textContent='Отправляем...';try{const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:inputs[0].value,phone:inputs[1].value,email:inputs[2].value,message:inputs[3].value})});const data=await r.json();if(!r.ok)throw Error(data.error||'Ошибка отправки');status.textContent='Сообщение отправлено. Номер обращения: '+data.id;inputs.forEach(i=>i.value='');checkbox.checked=false}catch(e){status.textContent=e.message}finally{button.disabled=false}};
+        button.onclick=async()=>{if(!checkbox.checked){status.textContent='Подтвердите согласие на обработку данных.';return}button.disabled=true;status.textContent='Отправляем...';try{const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:inputs[0].value,phone:inputs[1].value,email:inputs[2].value,message:inputs[3].value,consent:checkbox.checked})});const data=await r.json();if(!r.ok)throw Error(data.error||'Ошибка отправки');status.textContent='Сообщение отправлено. Номер обращения: '+data.id;inputs.forEach(i=>i.value='');checkbox.checked=false}catch(e){status.textContent=e.message}finally{button.disabled=false}};
       }
     }
   }

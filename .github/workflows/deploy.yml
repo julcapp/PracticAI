@@ -116,3 +116,9 @@ jobs:
       - name: 🩺 Проверить состояние API
         run: |
           curl --silent --show-error --max-time 20 --write-out '\nHTTP %{http_code}\n' https://practicai.ru/api/health || true
+
+      - name: 🩺 Проверить таблицы CRM
+        env:
+          DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          curl --silent --show-error --max-time 20 --user "admin:$DEPLOY_ADMIN_PASSWORD" --write-out '\nHTTP %{http_code}\n' https://practicai.ru/api/admin/diagnostics || true

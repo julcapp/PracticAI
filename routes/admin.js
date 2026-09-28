@@ -56,6 +56,22 @@ function authenticate(req,res,next) {
 }
 router.use(authenticate);
 router.get('/session',(_req,res)=>res.json({ok:true}));
+router.get('/diagnostics',async(_req,res)=>{
+  const checks={};
+  try { await db.query('SELECT 1');checks.connection='ok'; }
+  catch (e) { checks.connection=e.code||'error';return res.json({checks}); }
+  for (const [key,query] of [
+    ['site_content','SELECT id FROM site_content LIMIT 0'],
+    ['site_texts','SELECT text_key FROM site_texts LIMIT 0'],
+    ['contacts','SELECT id,status FROM contacts LIMIT 0'],
+  ]) {
+    try { await db.query(query);checks[key]='ok'; }
+    catch (e) { checks[key]=e.code||'error'; }
+  }
+  try { await ensureSchema();checks.schema_creation='ok'; }
+  catch (e) { checks.schema_creation=e.code||'error'; }
+  return res.json({checks});
+});
 const editableKeys = ['main_title','main_contact_intro','education_title','education_intro'];
 router.get('/texts',async(_req,res,next)=>{
   try { await ensureSchema();const [rows]=await db.execute('SELECT text_key,value FROM site_texts');res.json({texts:Object.fromEntries(rows.map(r=>[r.text_key,r.value]))}); }catch(e){next(e)}

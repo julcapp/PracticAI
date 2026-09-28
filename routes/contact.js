@@ -9,7 +9,7 @@ const db     = require('../db');
  * Сохраняет заявку в MySQL таблицу `contacts`
  */
 router.post('/', async (req, res) => {
-  const { name, phone, email, message } = req.body;
+  const { name, phone, email, message, consent } = req.body;
 
   // ── Валидация ──────────────────────────────
   if (typeof name !== 'string' || typeof phone !== 'string' || typeof message !== 'string' || !name.trim() || !phone.trim() || !message.trim()) {
@@ -17,6 +17,7 @@ router.post('/', async (req, res) => {
       error: 'Заполните обязательные поля: имя, телефон, сообщение',
     });
   }
+  if (consent !== true) return res.status(400).json({ error: 'Подтвердите согласие на обработку данных для ответа' });
 
   if (name.length > 100 || phone.length > 30 || message.length > 2000 || (email && (typeof email !== 'string' || email.length > 150))) {
     return res.status(400).json({ error: 'Слишком длинные данные' });

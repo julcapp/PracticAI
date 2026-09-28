@@ -25,8 +25,8 @@ app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 // Статика из папки public/
 const { router: adminRouter, authenticate } = require('./routes/admin');
 const publicDir = path.join(__dirname, 'public');
-app.get('/admin', authenticate, (_req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
-app.get('/admin.html', authenticate, (_req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
+app.get('/admin', authenticate, (_req, res) => res.sendFile(path.join(__dirname, 'views', 'admin.html')));
+app.get('/admin.html', authenticate, (_req, res) => res.sendFile(path.join(__dirname, 'views', 'admin.html')));
 app.get('/', (_req, res, next) => {
   fs.readFile(path.join(publicDir, 'index.html'), 'utf8', (error, html) => {
     if (error) return next(error);

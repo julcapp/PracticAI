@@ -2,6 +2,7 @@
 
 const router = require('express').Router();
 const db     = require('../db');
+const { notifyContact } = require('../mail');
 
 /**
  * POST /api/contact
@@ -37,6 +38,10 @@ router.post('/', async (req, res) => {
     );
 
     console.log(`📩 Новая заявка #${result.insertId} от ${name}`);
+
+    // Письмо отправляется после сохранения: недоступность SMTP не теряет заявку.
+    notifyContact({ id: result.insertId, name: name.trim(), phone: phone.trim(), email: email?.trim() || null, message: message.trim() })
+      .catch(err => console.error('[mail] Delivery failed:', err.message));
 
     return res.status(201).json({
       success: true,

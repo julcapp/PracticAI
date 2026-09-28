@@ -23,10 +23,34 @@ jobs:
         run: npm install --omit=dev
 
       - name: 📝 Создать .env
+        env:
+          DEPLOY_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          DEPLOY_SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
-          printf 'NODE_ENV=production\nPORT=3000\nALLOWED_ORIGIN=https://practicai.ru\nDB_HOST=localhost\nDB_USER=host1688282_practicai\nDB_PASSWORD=%s\nDB_NAME=host1688282_practicai\nDB_PORT=3306\n' \
-            "${{ secrets.DB_PASSWORD }}" > .env
-          printf 'ADMIN_USER=admin\nADMIN_PASSWORD=%s\nSITE_ORIGIN=https://practicai.ru\n' "${{ secrets.ADMIN_PASSWORD }}" >> .env
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const config = {
+            NODE_ENV: 'production',
+            PORT: '3000',
+            ALLOWED_ORIGIN: 'https://practicai.ru',
+            DB_HOST: 'localhost',
+            DB_USER: 'host1688282_practicai',
+            DB_PASSWORD: process.env.DEPLOY_DB_PASSWORD || '',
+            DB_NAME: 'host1688282_practicai',
+            DB_PORT: '3306',
+            ADMIN_USER: 'admin',
+            ADMIN_PASSWORD: process.env.DEPLOY_ADMIN_PASSWORD || '',
+            SITE_ORIGIN: 'https://practicai.ru',
+            SMTP_HOST: 'mail.hostland.ru',
+            SMTP_PORT: '465',
+            SMTP_USER: 'no-reply@practicai.ru',
+            SMTP_PASSWORD: process.env.DEPLOY_SMTP_PASSWORD || '',
+            MAIL_FROM: 'no-reply@practicai.ru',
+            CONTACT_EMAIL: 'practic@practicai.ru',
+          };
+          fs.writeFileSync('.env', Object.entries(config).map(([key, value]) => `${key}=${JSON.stringify(value)}`).join('\n') + '\n', { mode: 0o600 });
+          NODE
 
       - name: 🔄 Обновить tmp/restart.txt
         run: |

@@ -3,6 +3,7 @@
 const router = require('express').Router();
 const db     = require('../db');
 const { notifyContact } = require('../mail');
+const { ensureSchema } = require('./admin');
 
 /**
  * POST /api/contact
@@ -31,6 +32,7 @@ router.post('/', async (req, res) => {
 
   // ── Сохранение в БД ────────────────────────
   try {
+    await ensureSchema();
     const [result] = await db.execute(
       `INSERT INTO contacts (name, phone, email, message, created_at)
        VALUES (?, ?, ?, ?, NOW())`,

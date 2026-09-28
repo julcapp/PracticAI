@@ -3,9 +3,9 @@
   const isEducation=location.pathname==='/education.html';
   if(!isEducation){
     const nav=document.querySelector('nav');
-    if(nav){const a=document.createElement('a');a.href='/education.html';a.textContent='Образование и курсы';nav.append(a)}
+    if(nav && !document.querySelector('#education')){const a=document.createElement('a');a.href='/education.html';a.textContent='Образование и курсы';nav.append(a)}
     const target=document.getElementById('contact');
-    if(target){
+    if(target && !document.querySelector('#education')){
       const block=document.createElement('section');block.id='education-preview';
       block.style.cssText='padding:70px 24px;background:#eaf4fa;color:#173857;text-align:center';
       const h=document.createElement('h2');h.textContent='Дополнительное образование · ООО «Цифрономика»';

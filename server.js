@@ -37,7 +37,7 @@ app.get('/admin.html', authenticate, (_req, res) => res.sendFile(path.join(__dir
 app.get('/', (_req, res, next) => {
   fs.readFile(path.join(publicDir, 'index.html'), 'utf8', (error, html) => {
     if (error) return next(error);
-    res.type('html').send(html.replace('</body>', '<script src="/site-enhancements.js" defer></script></body>'));
+    res.type('html').send(html.includes('src="/site-enhancements.js"') ? html : html.replace('</body>', '<script src="/site-enhancements.js" defer></script></body>'));
   });
 });
 app.use(express.static(publicDir, { etag: true, index: false }));

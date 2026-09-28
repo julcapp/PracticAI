@@ -1,0 +1,5 @@
+<style>
+.education-integrated{padding:76px 0;background:#fff;color:#163454;scroll-margin-top:90px}
+.education-soft{background:#eaf4fa}.education-integrated h2{margin:10px 0 20px}.education-integrated p{max-width:850px;line-height:1.7;margin:0 0 18px}.education-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:28px}.education-cards article{background:#fff;border:1px solid #d8e6f2;border-radius:14px;padding:26px}.education-cards h3{margin:0 0 15px}.education-cards li{margin:10px 0;line-height:1.5}.education-cards a{color:#1266aa;font-weight:700}
+@media(max-width:800px){.education-cards{grid-template-columns:1fr}.education-integrated{padding:54px 0}}
+</style>

@@ -22,6 +22,9 @@ jobs:
       - name: 🔧 npm install
         run: npm install --omit=dev
 
+      - name: 🧩 Собрать главную с образовательными разделами
+        run: python3 scripts/prepare-public.py
+
       - name: 📝 Создать .env
         env:
           DEPLOY_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -112,6 +115,32 @@ jobs:
           server-dir: /practicai.ru/htdocs/www/
           local-dir: ./security_patch/
           dangerous-clean-slate: false
+
+      - name: 📄 Обновить публичные страницы в корневой папке сайта
+        env:
+          DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          for filename in index.html education.html site-enhancements.js; do
+            curl --fail --silent --show-error --ftp-create-dirs \
+              --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+              --upload-file "public/$filename" \
+              "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/$filename"
+          done
+
+      - name: 📄 Проверить разделы на основном домене
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 20 https://practicai.ru/ -o homepage.html \
+              && grep -q 'id="course-catalog"' homepage.html \
+              && grep -q 'id="organization"' homepage.html \
+              && curl --fail --silent --show-error --max-time 20 https://practicai.ru/education.html -o education-live.html \
+              && grep -q 'id="details"' education-live.html; then
+              echo "Главная, каталог и сведения доступны"
+              exit 0
+            fi
+            sleep 8
+          done
+          exit 1
 
       - name: 🩺 Проверить состояние API после перезапуска
         run: |

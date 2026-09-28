@@ -77,6 +77,7 @@ jobs:
             node_modules/.cache/**
             htdocs_only/**
             diagnostics/**
+            security_patch/**
 
       - name: 📡 Deploy → /projects/digital/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -98,3 +99,20 @@ jobs:
             node_modules/.cache/**
             htdocs_only/**
             diagnostics/**
+            security_patch/**
+
+      - name: 🔒 Закрыть старый файл миграции в htdocs
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp7.hostland.ru
+          username: host1688282_practicai
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          server-dir: /practicai.ru/htdocs/www/
+          local-dir: ./security_patch/
+          dangerous-clean-slate: false
+
+      - name: 🩺 Проверить состояние API
+        run: |
+          curl --silent --show-error --max-time 20 --write-out '\nHTTP %{http_code}\n' https://practicai.ru/api/health || true

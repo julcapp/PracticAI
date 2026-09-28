@@ -113,12 +113,20 @@ jobs:
           local-dir: ./security_patch/
           dangerous-clean-slate: false
 
-      - name: 🩺 Проверить состояние API
+      - name: 🩺 Проверить состояние API после перезапуска
         run: |
-          curl --silent --show-error --max-time 20 --write-out '\nHTTP %{http_code}\n' https://practicai.ru/api/health || true
+          for attempt in 1 2 3 4 5; do
+            if curl --fail --silent --show-error --max-time 20 https://practicai.ru/api/health; then
+              exit 0
+            fi
+            sleep 8
+          done
+          exit 1
 
       - name: 🩺 Проверить таблицы CRM
         env:
           DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
-          curl --silent --show-error --max-time 20 --user "admin:$DEPLOY_ADMIN_PASSWORD" --write-out '\nHTTP %{http_code}\n' https://practicai.ru/api/admin/diagnostics || true
+          response=$(curl --fail --silent --show-error --max-time 20 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/api/admin/diagnostics)
+          echo "$response"
+          echo "$response" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const c=JSON.parse(s).checks;if(Object.values(c).some(v=>v!=="ok"))process.exit(1)})'

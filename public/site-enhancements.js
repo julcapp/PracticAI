@@ -50,7 +50,8 @@
     const response=await fetch('/api/content');if(!response.ok)return;
     const {sections,texts}=await response.json();
     const title=document.querySelector('h1');
-    if(title && texts[isEducation?'education_title':'main_title']) title.textContent=texts[isEducation?'education_title':'main_title'];
+    if(title && !isEducation){title.innerHTML='AI-курсы для руководителей,<br><span>индивидуальные программы для компаний</span>';}
+    else if(title && texts.education_title) title.textContent=texts.education_title;
     const intro=isEducation?document.querySelector('.hero p'):document.querySelector('#contact .contact-info p');
     if(intro && texts[isEducation?'education_intro':'main_contact_intro'])intro.textContent=texts[isEducation?'education_intro':'main_contact_intro'];
     if(!isEducation && /^\/media\/[0-9a-f-]{36}\.(png|jpg|webp)$/.test(texts.main_hero_image||'')){

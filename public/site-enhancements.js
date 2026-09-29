@@ -13,6 +13,8 @@
       logo.style.cssText='width:190px;height:auto;display:block';
       brand.append(logo);
     }
+    const heroLogo=document.querySelector('.hero img[alt="PracticAI"]');
+    if(heroLogo){heroLogo.src='/brand/practicai-logo.svg';heroLogo.removeAttribute('style');heroLogo.style.cssText='width:min(320px,82vw);height:auto;margin:0 0 24px;display:block'}
     if(nav && !document.querySelector('#education')){const a=document.createElement('a');a.href='/education.html';a.textContent='Образование и курсы';nav.append(a)}
     const target=document.getElementById('contact');
     if(target && !document.querySelector('#education')){

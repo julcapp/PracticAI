@@ -1,6 +1,6 @@
 'use strict';
 (async()=>{
-  const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/managed-blocks.css';document.head.append(stylesheet);
+  const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/managed-blocks.css';document.head.append(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'/responsive-brand.css'}));document.head.append(stylesheet);
   const isEducation=location.pathname==='/education.html';
   if(!isEducation){
     const nav=document.querySelector('nav');
@@ -15,6 +15,12 @@
     }
     const heroLogo=document.querySelector('.hero img[alt="PracticAI"]');
     if(heroLogo){heroLogo.src='/brand/practicai-logo.svg';heroLogo.removeAttribute('style');heroLogo.style.cssText='width:min(320px,82vw);height:auto;margin:0 0 24px;display:block'}
+    const dates=document.querySelector('.dates');
+    if(dates && !document.querySelector('#experts')){
+      const section=document.createElement('section');section.id='experts';section.className='experts-section';
+      section.innerHTML='<div class="container"><span class="section-label">Команда</span><h2>Эксперты PracticAI</h2><p class="experts-intro">Карточки специалистов появятся после подтверждения данных.</p><div class="experts-grid">'+Array.from({length:6},(_,i)=>`<article class="expert-card"><div class="expert-avatar">${String(i+1).padStart(2,'0')}</div><div><h3>Эксперт ${i+1}</h3><p>Данные специалиста будут добавлены позже.</p></div></article>`).join('')+'</div></div>';
+      dates.before(section);
+    }
     if(nav && !document.querySelector('#education')){const a=document.createElement('a');a.href='/education.html';a.textContent='Образование и курсы';nav.append(a)}
     const target=document.getElementById('contact');
     if(target && !document.querySelector('#education')){

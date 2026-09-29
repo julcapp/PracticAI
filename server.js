@@ -49,6 +49,7 @@ app.use('/api/health',  healthRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/content', require('./routes/content'));
+app.use('/media', require('./routes/media'));
 
 // SPA fallback
 app.get('*', (_req, res) => {

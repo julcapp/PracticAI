@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS site_content (
   placement ENUM('main','education') NOT NULL DEFAULT 'main',
   title VARCHAR(200) NOT NULL,
   body TEXT NOT NULL,
+  image_url VARCHAR(120) NULL,
+  layout_style ENUM('text','left','right','top') NOT NULL DEFAULT 'text',
   sort_order INT NOT NULL DEFAULT 0,
   published TINYINT(1) NOT NULL DEFAULT 1,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

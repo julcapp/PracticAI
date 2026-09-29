@@ -1,16 +1,159 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>CRM · PracticAI</title><style>
-:root{font-family:Arial,sans-serif;color:#183456;background:#f2f6fb}*{box-sizing:border-box}body{margin:0;font-size:16px;line-height:1.5}header{background:#143154;color:white;padding:18px 24px}header a{color:#b5e7ff}main{max-width:1200px;margin:30px auto;padding:0 20px}nav{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap}button{font:inherit;cursor:pointer;border:0;border-radius:7px;background:#167ac0;color:white;padding:9px 14px}button.ghost{background:#e1ecf7;color:#153156}button.danger{background:#bd3243}.panel{background:white;border:1px solid #dce5f0;border-radius:12px;padding:22px;margin:15px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-weight:700;display:block;margin:12px 0}input,textarea,select{font:inherit;padding:10px;border:1px solid #aebed0;border-radius:6px;width:100%;margin-top:5px}textarea{min-height:130px}h1{font-size:28px;margin:0}h2{font-size:22px;margin:0 0 12px}.item{border-top:1px solid #dce5f0;padding:15px 0}.item:first-child{border:0}.meta{color:#61778e;font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.hidden{display:none}#message{min-height:24px;color:#9c2539}.status{max-width:180px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
-</style></head><body><header><h1>PracticAI · CRM</h1><a href="/">На сайт</a> · <a href="/education.html">Образование</a></header><main><p>Меняйте тексты, создавайте разделы и работайте с обращениями. Сохранённые опубликованные разделы появляются на сайте сразу.</p><nav><button id="tab-content">Тексты и разделы</button><button id="tab-contacts" class="ghost">Обратная связь</button></nav><p id="message" role="status"></p><section id="content-panel"><div class="panel"><h2>Быстрое изменение текста</h2><form id="texts-form"><label>Заголовок главной<input id="main_title" maxlength="3000"></label><label>Текст в блоке связи на главной<textarea id="main_contact_intro" maxlength="3000"></textarea></label><label>Заголовок страницы образования<input id="education_title" maxlength="3000"></label><label>Вводный текст об образовании<textarea id="education_intro" maxlength="3000"></textarea></label><button type="submit">Сохранить тексты</button></form></div><div class="panel"><h2 id="form-title">Добавить раздел</h2><form id="section-form"><input type="hidden" id="id"><div class="grid"><label>Код раздела (латиница, цифры, дефис)<input id="slug" required pattern="[a-z0-9-]{2,80}" maxlength="80" placeholder="new-course"></label><label>Где показывать<select id="placement"><option value="main">Главная PracticAI</option><option value="education">Образование</option></select></label></div><label>Заголовок<input id="title" required maxlength="200"></label><label>Текст<textarea id="body" maxlength="10000" placeholder="Основной текст раздела"></textarea></label><div class="grid"><label>Порядок<input id="sort_order" type="number" value="0" min="-10000" max="10000"></label><label>Статус<select id="published"><option value="1">Опубликован</option><option value="0">Черновик</option></select></label></div><div class="actions"><button type="submit">Сохранить</button><button type="button" id="clear" class="ghost">Новый раздел</button></div></form></div><div class="panel"><h2>Разделы сайта</h2><div id="sections">Загрузка...</div></div></section><section id="contacts-panel" class="panel hidden"><h2>Обращения</h2><div id="contacts">Загрузка...</div></section></main><script>
-const $=s=>document.querySelector(s),message=$('#message');let sections=[];
-async function api(path,options={}){const r=await fetch('/api/admin/'+path,{...options,headers:{'Content-Type':'application/json','X-Requested-With':'PracticAI-CRM',...(options.headers||{})}});const data=await r.json();if(!r.ok)throw Error(data.error||'Ошибка запроса');return data}
-function say(t){message.textContent=t;setTimeout(()=>{if(message.textContent===t)message.textContent=''},5000)}
-function reset(){ $('#section-form').reset();$('#id').value='';$('#sort_order').value='0';$('#form-title').textContent='Добавить раздел'}
-function row(label,text){const p=document.createElement('p');const b=document.createElement('strong');b.textContent=label+' ';p.append(b,document.createTextNode(text||''));return p}
-async function loadSections(){const data=await api('content');sections=data.sections;const root=$('#sections');root.replaceChildren();if(!sections.length)root.textContent='Дополнительных разделов пока нет.';for(const s of sections){const article=document.createElement('article');article.className='item';const h=document.createElement('h3');h.textContent=s.title;article.append(h,row('Место:',s.placement==='main'?'Главная':'Образование'),row('Код:',s.slug),row('Статус:',s.published?'Опубликован':'Черновик'));const controls=document.createElement('div');controls.className='actions';const edit=document.createElement('button');edit.textContent='Изменить';edit.onclick=()=>{for(const field of ['id','slug','placement','title','body','sort_order','published'])$('#'+field).value=String(s[field]);$('#form-title').textContent='Редактировать раздел';scrollTo({top:0,behavior:'smooth'})};const remove=document.createElement('button');remove.textContent='Удалить';remove.className='danger';remove.onclick=async()=>{if(!confirm('Удалить раздел «'+s.title+'»?'))return;try{await api('content/'+s.id,{method:'DELETE'});await loadSections();say('Раздел удалён')}catch(e){say(e.message)}};controls.append(edit,remove);article.append(controls);root.append(article)}}
-$('#section-form').onsubmit=async e=>{e.preventDefault();const id=$('#id').value;const body={slug:$('#slug').value,placement:$('#placement').value,title:$('#title').value,body:$('#body').value,sort_order:Number($('#sort_order').value),published:Number($('#published').value)};try{await api('content'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});reset();await loadSections();say('Сохранено и доступно на сайте')}catch(e){say(e.message)}};
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>CRM · PracticAI</title>
+<link rel="stylesheet" href="/managed-blocks.css">
+<style>
+:root{font-family:Arial,sans-serif;color:#183456;background:#f2f6fb}*{box-sizing:border-box}
+body{margin:0;font-size:16px;line-height:1.5}header{background:#143154;color:white;padding:18px 24px}header a{color:#b5e7ff}
+main{max-width:1200px;margin:30px auto;padding:0 20px}nav,.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+button{font:inherit;cursor:pointer;border:0;border-radius:7px;background:#167ac0;color:white;padding:9px 14px}
+button.ghost{background:#e1ecf7;color:#153156}button.danger{background:#bd3243}
+.panel{background:white;border:1px solid #dce5f0;border-radius:12px;padding:22px;margin:15px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-weight:700;display:block;margin:12px 0}
+input,textarea,select{font:inherit;padding:10px;border:1px solid #aebed0;border-radius:6px;width:100%;margin-top:5px}
+textarea{min-height:130px}h1{font-size:28px;margin:0}h2{font-size:22px;margin:0 0 12px}
+.item{border-top:1px solid #dce5f0;padding:15px 0}.item:first-child{border:0}
+.meta{color:#61778e;font-size:14px}.hidden{display:none}#message{min-height:24px;color:#9c2539}.status{max-width:180px}
+.preview-shell{background:#eaf4fa;padding:18px;border-radius:10px;max-width:900px}
+.preview-shell.mobile{max-width:390px}.preview-shell .managed-section{margin:0}
+.preview-shell.mobile .managed-section{grid-template-columns:1fr}
+.preview-shell.mobile .managed-section>*{grid-column:1;grid-row:auto}
+.preview-shell.mobile .managed-top img{grid-row:1}.preview-shell.mobile .managed-top .managed-copy{grid-row:2}
+.help{font-size:14px;color:#61778e}#hero-preview{display:block;max-width:280px;max-height:180px;object-fit:cover;margin:12px 0}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>PracticAI · CRM</h1><a href="/">На сайт</a> · <a href="/education.html">Образование</a></header>
+<main>
+<p>Меняйте тексты и изображения, создавайте блоки, смотрите результат и публикуйте, когда всё готово.</p>
+<nav><button id="tab-content">Страницы и блоки</button><button id="tab-contacts" class="ghost">Обратная связь</button></nav>
+<p id="message" role="status"></p>
+<section id="content-panel">
+  <div class="panel">
+    <h2>Основные тексты и изображение главной</h2>
+    <form id="texts-form">
+      <label>Заголовок главной<input id="main_title" maxlength="3000"></label>
+      <label>Текст в блоке связи на главной<textarea id="main_contact_intro" maxlength="3000"></textarea></label>
+      <label>Заголовок страницы образования<input id="education_title" maxlength="3000"></label>
+      <label>Вводный текст об образовании<textarea id="education_intro" maxlength="3000"></textarea></label>
+      <label>Главное изображение<input type="file" id="hero-file" accept="image/png,image/jpeg,image/webp"></label>
+      <div class="actions"><button type="button" id="upload-hero">Загрузить изображение</button><button type="button" id="clear-hero" class="ghost">Вернуть исходное</button></div>
+      <input id="main_hero_image" type="hidden"><img id="hero-preview" alt="Новое главное изображение" class="hidden">
+      <p class="help">PNG, JPEG или WebP до 3 МБ. Изображение появится на сайте после «Сохранить тексты».</p>
+      <button type="submit">Сохранить тексты и изображение</button>
+    </form>
+  </div>
+  <div class="panel">
+    <h2 id="form-title">Добавить блок</h2>
+    <form id="section-form">
+      <input type="hidden" id="id">
+      <div class="grid"><label>Код блока (латиница, цифры, дефис)<input id="slug" required pattern="[a-z0-9-]{2,80}" maxlength="80" placeholder="new-course"></label>
+      <label>Страница<select id="placement"><option value="main">Главная PracticAI</option><option value="education">Образование</option></select></label></div>
+      <label>Заголовок<input id="title" required maxlength="200"></label>
+      <label>Текст<textarea id="body" maxlength="10000" placeholder="Основной текст блока"></textarea></label>
+      <div class="grid"><label>Расположение<select id="layout_style"><option value="text">Только текст</option><option value="left">Изображение слева</option><option value="right">Изображение справа</option><option value="top">Изображение сверху</option></select></label>
+      <label>Изображение<input type="file" id="block-file" accept="image/png,image/jpeg,image/webp"></label></div>
+      <div class="actions"><button type="button" id="upload-block">Загрузить изображение</button><button type="button" id="clear-image" class="ghost">Убрать изображение</button></div>
+      <input id="image_url" type="hidden"><p id="image-label" class="help">Изображение не выбрано.</p>
+      <div class="grid"><label>Порядок среди добавленных блоков<input id="sort_order" type="number" value="0" min="-10000" max="10000"></label>
+      <label>Статус<select id="published"><option value="0">Черновик</option><option value="1">Опубликован</option></select></label></div>
+      <div class="actions"><button type="submit">Сохранить блок</button><button type="button" id="clear" class="ghost">Новый блок</button></div>
+    </form>
+    <h2>Предварительный просмотр блока</h2>
+    <div class="actions"><button type="button" id="preview-desktop" class="ghost">Компьютер</button><button type="button" id="preview-mobile" class="ghost">Телефон</button></div>
+    <div id="preview-shell" class="preview-shell"><section id="block-preview" class="managed-section managed-text"></section></div>
+    <p class="help">Это предпросмотр добавленного блока. Он не меняет сайт до сохранения и публикации.</p>
+  </div>
+  <div class="panel"><h2>Добавленные блоки</h2><div id="sections">Загрузка...</div></div>
+</section>
+<section id="contacts-panel" class="panel hidden"><h2>Обращения</h2><div id="contacts">Загрузка...</div></section>
+</main>
+<script>
+const $=selector=>document.querySelector(selector),message=$('#message');let sections=[];
+async function api(path,options={}){
+  const response=await fetch('/api/admin/'+path,{...options,headers:{'Content-Type':'application/json','X-Requested-With':'PracticAI-CRM',...(options.headers||{})}});
+  const data=await response.json();if(!response.ok)throw Error(data.error||'Ошибка запроса');return data;
+}
+function say(text){message.textContent=text;setTimeout(()=>{if(message.textContent===text)message.textContent=''},7000)}
+function row(label,text){const p=document.createElement('p'),b=document.createElement('strong');b.textContent=label+' ';p.append(b,document.createTextNode(text||''));return p}
+function preview(){
+  const shell=$('#preview-shell'),section=$('#block-preview');section.replaceChildren();
+  const layout=$('#layout_style').value,url=$('#image_url').value;
+  section.className='managed-section managed-'+layout;
+  if(url&&layout!=='text'){const image=document.createElement('img');image.src=url;image.alt=$('#title').value||'Изображение блока';section.append(image)}
+  const copy=document.createElement('div');copy.className='managed-copy';
+  const heading=document.createElement('h2');heading.textContent=$('#title').value||'Заголовок блока';
+  const body=document.createElement('p');body.textContent=$('#body').value||'Здесь будет текст блока.';
+  copy.append(heading,body);section.append(copy);
+}
+function reset(){
+  $('#section-form').reset();$('#id').value='';$('#image_url').value='';$('#sort_order').value='0';$('#published').value='0';
+  $('#form-title').textContent='Добавить блок';$('#image-label').textContent='Изображение не выбрано.';preview();
+}
+async function upload(file){
+  if(!file)throw Error('Выберите изображение');
+  if(file.size>3*1024*1024)throw Error('Размер изображения не должен превышать 3 МБ');
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw Error('Выберите PNG, JPEG или WebP');
+  const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Не удалось прочитать файл'));reader.readAsDataURL(file)});
+  const response=await fetch('/media/upload',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'PracticAI-CRM'},body:JSON.stringify({name:file.name,data})});
+  const result=await response.json();if(!response.ok)throw Error(result.error||'Ошибка загрузки');return result.url;
+}
+$('#upload-block').onclick=async()=>{try{const url=await upload($('#block-file').files[0]);$('#image_url').value=url;$('#image-label').textContent='Изображение загружено. Сохраните блок.';preview();say('Изображение загружено')}catch(e){say(e.message)}};
+$('#clear-image').onclick=()=>{$('#image_url').value='';$('#block-file').value='';$('#image-label').textContent='Изображение не выбрано.';preview()};
+$('#upload-hero').onclick=async()=>{try{const url=await upload($('#hero-file').files[0]);$('#main_hero_image').value=url;$('#hero-preview').src=url;$('#hero-preview').classList.remove('hidden');say('Изображение загружено. Сохраните тексты.')}catch(e){say(e.message)}};
+$('#clear-hero').onclick=()=>{$('#main_hero_image').value='';$('#hero-file').value='';$('#hero-preview').classList.add('hidden');say('Нажмите «Сохранить тексты», чтобы вернуть исходное изображение')};
+for(const id of ['title','body','layout_style','image_url'])$('#'+id).addEventListener('input',preview);
+$('#preview-desktop').onclick=()=>$('#preview-shell').classList.remove('mobile');
+$('#preview-mobile').onclick=()=>$('#preview-shell').classList.add('mobile');
+async function loadSections(){
+  const data=await api('content');sections=data.sections;const root=$('#sections');root.replaceChildren();
+  if(!sections.length)root.textContent='Добавленных блоков пока нет.';
+  for(const section of sections){
+    const article=document.createElement('article');article.className='item';
+    const heading=document.createElement('h3');heading.textContent=section.title;
+    article.append(heading,row('Страница:',section.placement==='main'?'Главная':'Образование'),row('Статус:',section.published?'Опубликован':'Черновик'),row('Порядок:',String(section.sort_order)));
+    const actions=document.createElement('div');actions.className='actions';
+    const edit=document.createElement('button');edit.textContent='Изменить';
+    edit.onclick=()=>{for(const field of ['id','slug','placement','title','body','sort_order','published','image_url','layout_style'])$('#'+field).value=String(section[field]??'');$('#image-label').textContent=section.image_url?'Изображение выбрано.':'Изображение не выбрано.';$('#form-title').textContent='Редактировать блок';preview();scrollTo({top:0,behavior:'smooth'})};
+    const remove=document.createElement('button');remove.textContent='Удалить';remove.className='danger';
+    remove.onclick=async()=>{if(!confirm('Удалить блок «'+section.title+'»?'))return;try{await api('content/'+section.id,{method:'DELETE'});await loadSections();say('Блок удалён')}catch(e){say(e.message)}};
+    actions.append(edit,remove);article.append(actions);root.append(article);
+  }
+}
+$('#section-form').onsubmit=async event=>{
+  event.preventDefault();const id=$('#id').value;
+  const body={slug:$('#slug').value,placement:$('#placement').value,title:$('#title').value,body:$('#body').value,image_url:$('#image_url').value,layout_style:$('#layout_style').value,sort_order:Number($('#sort_order').value),published:Number($('#published').value)};
+  try{await api('content'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(body)});reset();await loadSections();say('Блок сохранён'+(body.published?' и опубликован':' как черновик'))}catch(e){say(e.message)}
+};
 $('#clear').onclick=reset;
-async function loadTexts(){const {texts}=await api('texts');for(const k of ['main_title','main_contact_intro','education_title','education_intro'])$('#'+k).value=texts[k]||''}
-$('#texts-form').onsubmit=async e=>{e.preventDefault();const data={};for(const k of ['main_title','main_contact_intro','education_title','education_intro'])data[k]=$('#'+k).value;try{await api('texts',{method:'PUT',body:JSON.stringify(data)});say('Тексты сохранены')}catch(e){say(e.message)}};
-async function loadContacts(){const data=await api('contacts');const root=$('#contacts');root.replaceChildren();if(!data.contacts.length)root.textContent='Обращений пока нет.';for(const c of data.contacts){const article=document.createElement('article');article.className='item';const h=document.createElement('h3');h.textContent='#'+c.id+' · '+c.name;const date=document.createElement('div');date.className='meta';date.textContent=new Date(c.created_at).toLocaleString('ru-RU');article.append(h,date,row('Телефон:',c.phone),row('Email:',c.email),row('Сообщение:',c.message));const label=document.createElement('label');label.textContent='Статус';const select=document.createElement('select');select.className='status';for(const [value,text] of [['new','Новое'],['read','Прочитано'],['replied','Ответили']]){const o=document.createElement('option');o.value=value;o.textContent=text;select.append(o)}select.value=c.status;select.onchange=async()=>{try{await api('contacts/'+c.id,{method:'PATCH',body:JSON.stringify({status:select.value})});say('Статус сохранён')}catch(e){say(e.message)}};label.append(select);article.append(label);root.append(article)}}
-$('#tab-content').onclick=()=>{$('#content-panel').classList.remove('hidden');$('#contacts-panel').classList.add('hidden')};$('#tab-contacts').onclick=()=>{$('#content-panel').classList.add('hidden');$('#contacts-panel').classList.remove('hidden');loadContacts().catch(e=>say(e.message))};Promise.all([loadSections(),loadTexts()]).catch(e=>say(e.message));
-</script></body></html>
+async function loadTexts(){
+  const {texts}=await api('texts');
+  for(const key of ['main_title','main_contact_intro','education_title','education_intro','main_hero_image'])$('#'+key).value=texts[key]||'';
+  if(texts.main_hero_image){$('#hero-preview').src=texts.main_hero_image;$('#hero-preview').classList.remove('hidden')}
+}
+$('#texts-form').onsubmit=async event=>{
+  event.preventDefault();const values={};
+  for(const key of ['main_title','main_contact_intro','education_title','education_intro','main_hero_image'])values[key]=$('#'+key).value;
+  try{await api('texts',{method:'PUT',body:JSON.stringify(values)});say('Тексты и изображение сохранены')}catch(e){say(e.message)}
+};
+async function loadContacts(){
+  const data=await api('contacts'),root=$('#contacts');root.replaceChildren();if(!data.contacts.length)root.textContent='Обращений пока нет.';
+  for(const contact of data.contacts){
+    const article=document.createElement('article');article.className='item';
+    const heading=document.createElement('h3');heading.textContent='#'+contact.id+' · '+contact.name;
+    const date=document.createElement('div');date.className='meta';date.textContent=new Date(contact.created_at).toLocaleString('ru-RU');
+    article.append(heading,date,row('Телефон:',contact.phone),row('Email:',contact.email),row('Сообщение:',contact.message));
+    const label=document.createElement('label');label.textContent='Статус';const select=document.createElement('select');select.className='status';
+    for(const [value,text] of [['new','Новое'],['read','Прочитано'],['replied','Ответили']]){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option)}
+    select.value=contact.status;select.onchange=async()=>{try{await api('contacts/'+contact.id,{method:'PATCH',body:JSON.stringify({status:select.value})});say('Статус сохранён')}catch(e){say(e.message)}};
+    label.append(select);article.append(label);root.append(article);
+  }
+}
+$('#tab-content').onclick=()=>{$('#content-panel').classList.remove('hidden');$('#contacts-panel').classList.add('hidden')};
+$('#tab-contacts').onclick=()=>{$('#content-panel').classList.add('hidden');$('#contacts-panel').classList.remove('hidden');loadContacts().catch(e=>say(e.message))};
+reset();Promise.all([loadSections(),loadTexts()]).catch(e=>say(e.message));
+</script>
+</body></html>

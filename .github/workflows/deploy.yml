@@ -120,7 +120,7 @@ jobs:
         env:
           DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          for filename in index.html education.html site-enhancements.js; do
+          for filename in index.html education.html site-enhancements.js managed-blocks.css; do
             curl --fail --silent --show-error --ftp-create-dirs \
               --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
               --upload-file "public/$filename" \

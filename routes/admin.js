@@ -9,6 +9,8 @@ const schema = `CREATE TABLE IF NOT EXISTS site_content (
   placement ENUM('main','education') NOT NULL DEFAULT 'main',
   title VARCHAR(200) NOT NULL,
   body TEXT NOT NULL,
+  image_url VARCHAR(120) NULL,
+  layout_style ENUM('text','left','right','top') NOT NULL DEFAULT 'text',
   sort_order INT NOT NULL DEFAULT 0,
   published TINYINT(1) NOT NULL DEFAULT 1,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -32,7 +34,13 @@ const contactsSchema = `CREATE TABLE IF NOT EXISTS contacts (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
 let initialized;
 function ensureSchema() {
-  if (!initialized) initialized = Promise.all([db.query(schema),db.query(textSchema),db.query(contactsSchema)]).catch(e => { initialized = null; throw e; });
+  if (!initialized) initialized = (async () => {
+    await Promise.all([db.query(schema), db.query(textSchema), db.query(contactsSchema)]);
+    const [columns] = await db.query('SHOW COLUMNS FROM site_content');
+    const names = new Set(columns.map(column => column.Field));
+    if (!names.has('image_url')) await db.query('ALTER TABLE site_content ADD COLUMN image_url VARCHAR(120) NULL');
+    if (!names.has('layout_style')) await db.query("ALTER TABLE site_content ADD COLUMN layout_style ENUM('text','left','right','top') NOT NULL DEFAULT 'text'");
+  })().catch(e => { initialized = null; throw e; });
   return initialized;
 }
 function equal(a,b) {
@@ -82,36 +90,38 @@ router.get('/diagnostics',async(_req,res)=>{
   try {
     await ensureSchema();
     checks.schema_creation='ok';
+    await db.query('SELECT image_url,layout_style FROM site_content LIMIT 0');
+    checks.block_layout='ok';
     await db.query('SELECT id,status FROM contacts LIMIT 0');
     checks.contacts='ok';
   }
   catch (e) { checks.schema_creation=e.code||'error'; }
   return res.json({checks});
 });
-const editableKeys = ['main_title','main_contact_intro','education_title','education_intro'];
+const editableKeys = ['main_title','main_contact_intro','education_title','education_intro','main_hero_image'];
 router.get('/texts',async(_req,res,next)=>{
   try { await ensureSchema();const [rows]=await db.execute('SELECT text_key,value FROM site_texts');res.json({texts:Object.fromEntries(rows.map(r=>[r.text_key,r.value]))}); }catch(e){next(e)}
 });
 router.put('/texts',async(req,res,next)=>{
   const entries=Object.entries(req.body);
-  if (!entries.length || entries.some(([k,v])=>!editableKeys.includes(k)||typeof v!=='string'||v.length>3000))return res.status(400).json({error:'Недопустимое поле или слишком длинный текст'});
+  if (!entries.length || entries.some(([k,v])=>!editableKeys.includes(k)||typeof v!=='string'||v.length>3000||(k==='main_hero_image'&&v!==''&&!/^\/media\/[0-9a-f-]{36}\.(png|jpg|webp)$/.test(v))))return res.status(400).json({error:'Недопустимое поле или слишком длинный текст'});
   try { await ensureSchema();for(const [key,value] of entries)await db.execute('INSERT INTO site_texts (text_key,value) VALUES (?,?) ON DUPLICATE KEY UPDATE value=VALUES(value)',[key,value.trim()]);res.json({ok:true}); }catch(e){next(e)}
 });
 router.get('/content',async(_req,res,next)=>{
-  try { await ensureSchema(); const [rows]=await db.execute('SELECT id,slug,placement,title,body,sort_order,published,updated_at FROM site_content ORDER BY placement,sort_order,id');res.json({sections:rows}); } catch(e){next(e)}
+  try { await ensureSchema(); const [rows]=await db.execute('SELECT id,slug,placement,title,body,image_url,layout_style,sort_order,published,updated_at FROM site_content ORDER BY placement,sort_order,id');res.json({sections:rows}); } catch(e){next(e)}
 });
 function validate(data){
-  const {slug,placement,title,body,sort_order,published}=data;
-  if(typeof slug!=='string'||!/^[a-z0-9-]{2,80}$/.test(slug)||!['main','education'].includes(placement)||typeof title!=='string'||!title.trim()||title.length>200||typeof body!=='string'||body.length>10000||!Number.isInteger(sort_order)||Math.abs(sort_order)>10000||![0,1,false,true].includes(published))return false;
+  const {slug,placement,title,body,image_url,layout_style,sort_order,published}=data;
+  if(typeof slug!=='string'||!/^[a-z0-9-]{2,80}$/.test(slug)||!['main','education'].includes(placement)||typeof title!=='string'||!title.trim()||title.length>200||typeof body!=='string'||body.length>10000||!Number.isInteger(sort_order)||Math.abs(sort_order)>10000||![0,1,false,true].includes(published)||!['text','left','right','top'].includes(layout_style)||!(image_url===''||image_url==null||/^\/media\/[0-9a-f-]{36}\.(png|jpg|webp)$/.test(image_url)))return false;
   return true;
 }
 router.post('/content',async(req,res,next)=>{
   if(!validate(req.body))return res.status(400).json({error:'Проверьте поля раздела'});
-  try{await ensureSchema();const d=req.body;const [r]=await db.execute('INSERT INTO site_content (slug,placement,title,body,sort_order,published) VALUES (?,?,?,?,?,?)',[d.slug,d.placement,d.title.trim(),d.body.trim(),d.sort_order,Number(d.published)]);res.status(201).json({id:r.insertId});}catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код раздела уже существует'});next(e)}
+  try{await ensureSchema();const d=req.body;const [r]=await db.execute('INSERT INTO site_content (slug,placement,title,body,image_url,layout_style,sort_order,published) VALUES (?,?,?,?,?,?,?,?)',[d.slug,d.placement,d.title.trim(),d.body.trim(),d.image_url||null,d.layout_style,d.sort_order,Number(d.published)]);res.status(201).json({id:r.insertId});}catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код раздела уже существует'});next(e)}
 });
 router.put('/content/:id',async(req,res,next)=>{
   if(!validate(req.body))return res.status(400).json({error:'Проверьте поля раздела'});
-  try{await ensureSchema();const d=req.body;const [r]=await db.execute('UPDATE site_content SET slug=?,placement=?,title=?,body=?,sort_order=?,published=? WHERE id=?',[d.slug,d.placement,d.title.trim(),d.body.trim(),d.sort_order,Number(d.published),req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Раздел не найден'});res.json({ok:true});}catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код раздела уже существует'});next(e)}
+  try{await ensureSchema();const d=req.body;const [r]=await db.execute('UPDATE site_content SET slug=?,placement=?,title=?,body=?,image_url=?,layout_style=?,sort_order=?,published=? WHERE id=?',[d.slug,d.placement,d.title.trim(),d.body.trim(),d.image_url||null,d.layout_style,d.sort_order,Number(d.published),req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Раздел не найден'});res.json({ok:true});}catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код раздела уже существует'});next(e)}
 });
 router.delete('/content/:id',async(req,res,next)=>{
   try{await ensureSchema();await db.execute('DELETE FROM site_content WHERE id=?',[req.params.id]);res.json({ok:true});}catch(e){next(e)}

@@ -1,5 +1,6 @@
 'use strict';
 (async()=>{
+  const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/managed-blocks.css';document.head.append(stylesheet);
   const isEducation=location.pathname==='/education.html';
   if(!isEducation){
     const nav=document.querySelector('nav');
@@ -35,9 +36,25 @@
     if(title && texts[isEducation?'education_title':'main_title']) title.textContent=texts[isEducation?'education_title':'main_title'];
     const intro=isEducation?document.querySelector('.hero p'):document.querySelector('#contact .contact-info p');
     if(intro && texts[isEducation?'education_intro':'main_contact_intro'])intro.textContent=texts[isEducation?'education_intro':'main_contact_intro'];
+    if(!isEducation && /^\/media\/[0-9a-f-]{36}\.(png|jpg|webp)$/.test(texts.main_hero_image||'')){
+      const heroImage=document.querySelector('.hero img');
+      if(heroImage)heroImage.src=texts.main_hero_image;
+    }
     const items=sections.filter(s=>s.placement===(isEducation?'education':'main'));
     const anchor=isEducation?document.querySelector('#details'):document.querySelector('#contact');
     if(!anchor)return;
-    for(const item of items){const section=document.createElement('section');section.id='section-'+item.slug;section.style.cssText='max-width:1120px;margin:30px auto;padding:30px 20px;background:#fff;border-radius:12px';const h=document.createElement('h2');h.textContent=item.title;const body=document.createElement('p');body.textContent=item.body;body.style.whiteSpace='pre-line';section.append(h,body);anchor.before(section)}
+    for(const item of items){
+      const section=document.createElement('section');section.id='section-'+item.slug;
+      const hasImage=/^\/media\/[0-9a-f-]{36}\.(png|jpg|webp)$/.test(item.image_url||'');
+      section.className='managed-section managed-'+(hasImage&&['left','right','top'].includes(item.layout_style)?item.layout_style:'text');
+      const content=document.createElement('div');content.className='managed-copy';
+      const h=document.createElement('h2');h.textContent=item.title;
+      const body=document.createElement('p');body.textContent=item.body;
+      content.append(h,body);
+      if(hasImage && item.layout_style!=='text'){
+        const img=document.createElement('img');img.src=item.image_url;img.alt=item.title;img.loading='lazy';section.append(img);
+      }
+      section.append(content);anchor.before(section);
+    }
   }catch(e){console.warn('Дополнительные разделы временно недоступны')}
 })();

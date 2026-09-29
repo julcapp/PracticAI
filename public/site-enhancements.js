@@ -4,17 +4,6 @@
   const isEducation=location.pathname==='/education.html';
   if(!isEducation){
     const nav=document.querySelector('nav');
-    const brand=nav?.querySelector('.nav-logo');
-    if(brand){
-      brand.innerHTML='';
-      const logo=document.createElement('img');
-      logo.src='/brand/practicai-logo.svg';
-      logo.alt='PracticAI';
-      logo.style.cssText='width:190px;height:auto;display:block';
-      brand.append(logo);
-    }
-    const heroLogo=document.querySelector('.hero img[alt="PracticAI"]');
-    if(heroLogo){heroLogo.src='/brand/practicai-logo.svg';heroLogo.removeAttribute('style');heroLogo.style.cssText='width:min(320px,82vw);height:auto;margin:0 0 24px;display:block'}
     const dates=document.querySelector('.dates');
     if(dates && !document.querySelector('#experts')){
       const section=document.createElement('section');section.id='experts';section.className='experts-section';

@@ -124,12 +124,20 @@ jobs:
         env:
           DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          for filename in index.html education.html site-enhancements.js managed-blocks.css; do
+          for filename in index.html education.html site-enhancements.js managed-blocks.css favicon.svg; do
             curl --fail --silent --show-error --ftp-create-dirs \
               --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
               --upload-file "public/$filename" \
               "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/$filename"
           done
+          curl --fail --silent --show-error --ftp-create-dirs \\
+            --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \\
+            --upload-file public/brand/practicai-logo.svg \\
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/brand/practicai-logo.svg"
+          curl --fail --silent --show-error --ftp-create-dirs \\
+            --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \\
+            --upload-file public/brand/practicai-mark.svg \\
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/brand/practicai-mark.svg"
 
       - name: 📄 Проверить разделы на основном домене
         run: |

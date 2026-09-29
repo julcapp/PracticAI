@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: practicai-production
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Build & FTP Deploy
@@ -151,6 +155,15 @@ jobs:
             sleep 8
           done
           exit 1
+
+      - name: 🧩 Проверить редактор и стили CRM
+        env:
+          DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          curl --fail --silent --show-error --max-time 25 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/admin -o crm-live.html
+          grep -q 'Предварительный просмотр блока' crm-live.html
+          curl --fail --silent --show-error --max-time 25 https://practicai.ru/managed-blocks.css -o blocks-live.css
+          grep -q '.managed-section' blocks-live.css
 
       - name: 🩺 Проверить таблицы CRM
         env:

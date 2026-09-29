@@ -4,6 +4,15 @@
   const isEducation=location.pathname==='/education.html';
   if(!isEducation){
     const nav=document.querySelector('nav');
+    const brand=nav?.querySelector('.nav-logo');
+    if(brand){
+      brand.innerHTML='';
+      const logo=document.createElement('img');
+      logo.src='/brand/practicai-logo.svg';
+      logo.alt='PracticAI';
+      logo.style.cssText='width:190px;height:auto;display:block';
+      brand.append(logo);
+    }
     if(nav && !document.querySelector('#education')){const a=document.createElement('a');a.href='/education.html';a.textContent='Образование и курсы';nav.append(a)}
     const target=document.getElementById('contact');
     if(target && !document.querySelector('#education')){

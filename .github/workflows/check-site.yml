@@ -1,4 +1,4 @@
-name: 🔍 Check Site Status
+name: Проверка PracticAI
 
 on:
   workflow_dispatch:
@@ -7,32 +7,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔍 Проверить practicai.ru
+      - name: Проверить редактор CRM
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
-          echo "=== HTTP статус ==="
-          curl -v -L --max-time 30 https://practicai.ru/ 2>&1 | head -80
-          
-          echo ""
-          echo "=== Заголовки ответа ==="
-          curl -sI --max-time 30 https://practicai.ru/
-          
-          echo ""
-          echo "=== FTP структура директорий ==="
-          curl -v --list-only \
-            ftp://ftp7.hostland.ru/ \
-            --user "host1688282_practicai:Farpost100!@" \
-            --max-time 20 2>&1 || echo "FTP листинг недоступен"
-          
-          echo ""
-          echo "=== Файлы в htdocs/www/ ==="
-          curl -v --list-only \
-            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/" \
-            --user "host1688282_practicai:Farpost100!@" \
-            --max-time 20 2>&1 || echo "htdocs/www/ - ошибка"
-          
-          echo ""
-          echo "=== Файлы в projects/www/ ==="
-          curl -v --list-only \
-            "ftp://ftp7.hostland.ru/practicai.ru/projects/www/" \
-            --user "host1688282_practicai:Farpost100!@" \
-            --max-time 20 2>&1 || echo "projects/www/ - ошибка"
+          curl --fail --silent --show-error --max-time 25 --user "admin:$ADMIN_PASSWORD" https://practicai.ru/admin -o admin.html
+          grep -q 'Предварительный просмотр блока' admin.html
+          curl --fail --silent --show-error --max-time 25 https://practicai.ru/managed-blocks.css -o blocks.css
+          grep -q '.managed-section' blocks.css

@@ -34,6 +34,7 @@ jobs:
           DEPLOY_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           DEPLOY_SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DEPLOY_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           node - <<'NODE'
           const fs = require('node:fs');
@@ -55,6 +56,8 @@ jobs:
             SMTP_PASSWORD: process.env.DEPLOY_SMTP_PASSWORD || '',
             MAIL_FROM: 'no-reply@practicai.ru',
             CONTACT_EMAIL: 'practic@practicai.ru',
+            OPENAI_API_KEY: process.env.DEPLOY_OPENAI_API_KEY || '',
+            OPENAI_MODEL: 'gpt-5-mini',
           };
           fs.writeFileSync('.env', Object.entries(config).map(([key, value]) => `${key}=${JSON.stringify(value)}`).join('\n') + '\n', { mode: 0o600 });
           NODE
@@ -124,7 +127,7 @@ jobs:
         env:
           DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          for filename in index.html education.html site-enhancements.js managed-blocks.css responsive-brand.css favicon.svg; do
+          for filename in index.html education.html site-enhancements.js managed-blocks.css responsive-brand.css assistant-widget.js assistant-widget.css favicon.svg; do
             curl --fail --silent --show-error --ftp-create-dirs \
               --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
               --upload-file "public/$filename" \

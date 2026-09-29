@@ -47,6 +47,7 @@ const healthRouter  = require('./routes/health');
 const contactRouter = require('./routes/contact');
 app.use('/api/health',  healthRouter);
 app.use('/api/contact', contactRouter);
+app.use('/api/assistant', require('./routes/assistant'));
 app.use('/api/admin', adminRouter);
 app.use('/api/content', require('./routes/content'));
 app.use('/media', require('./routes/media'));

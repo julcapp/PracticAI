@@ -183,3 +183,21 @@ jobs:
           response=$(curl --fail --silent --show-error --max-time 20 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/api/admin/diagnostics)
           echo "$response"
           echo "$response" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const c=JSON.parse(s).checks;if(Object.values(c).some(v=>v!=="ok"))process.exit(1)})'
+
+      - name: 🤖 Проверить ответ AI-консультанта
+        run: |
+          curl --fail --silent --show-error --max-time 40 https://practicai.ru/assistant-widget.js -o assistant-live.js
+          grep -q '/api/assistant' assistant-live.js
+          curl --fail --silent --show-error --max-time 40 https://practicai.ru/api/assistant \
+            -H 'Content-Type: application/json' \
+            -H 'Origin: https://practicai.ru' \
+            --data '{"message":"Какие направления обучения есть?","history":[]}' -o assistant-response.json
+          node - <<'NODE'
+          const data = JSON.parse(require('node:fs').readFileSync('assistant-response.json', 'utf8'));
+          console.log('Режим консультанта:', data.mode || 'error');
+          if (data.mode !== 'ai' || typeof data.answer !== 'string' || !data.answer.trim()) {
+            console.error('Ответ AI не подтверждён. Проверьте ключ и серверный журнал консультанта.');
+            process.exit(1);
+          }
+          console.log('AI-консультант отвечает.');
+          NODE

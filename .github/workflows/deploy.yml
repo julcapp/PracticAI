@@ -195,6 +195,7 @@ jobs:
           node - <<'NODE'
           const data = JSON.parse(require('node:fs').readFileSync('assistant-response.json', 'utf8'));
           console.log('Режим консультанта:', data.mode || 'error');
+          if (data.reason) console.log('Причина резервного ответа:', data.reason);
           if (data.mode !== 'ai' || typeof data.answer !== 'string' || !data.answer.trim()) {
             console.error('Ответ AI не подтверждён. Проверьте ключ и серверный журнал консультанта.');
             process.exit(1);

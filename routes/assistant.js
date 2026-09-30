@@ -38,7 +38,7 @@ router.post('/', async (req, res) => {
   if (personalPattern.test(message)) {
     return res.json({ answer: 'Пожалуйста, не отправляйте телефон или email в чат. Для запроса на запись используйте защищённую форму ниже.', mode: 'guide' });
   }
-  if (!process.env.OPENAI_API_KEY) return res.json({ answer: guideAnswer(message), mode: 'guide' });
+  if (!process.env.OPENAI_API_KEY) return res.json({ answer: guideAnswer(message), mode: 'guide', reason: 'missing_key' });
 
   let published = [];
   try {
@@ -70,7 +70,13 @@ router.post('/', async (req, res) => {
           store: false, max_output_tokens: 300 }),
       });
     } finally { clearTimeout(timeout); }
-    if (!response.ok) throw new Error(`OpenAI ${response.status}`);
+    if (!response.ok) {
+      const failure = await response.json().catch(() => ({}));
+      const allowed = ['invalid_api_key', 'insufficient_quota', 'unsupported_country_region_territory', 'model_not_found', 'rate_limit_exceeded'];
+      const err = new Error(`OpenAI ${response.status}`);
+      err.reason = allowed.includes(failure.error?.code) ? failure.error.code : `upstream_${response.status}`;
+      throw err;
+    }
     const data = await response.json();
     const answer = (data.output || []).filter(item => item.type === 'message')
       .flatMap(item => item.content || []).filter(item => item.type === 'output_text')
@@ -79,7 +85,7 @@ router.post('/', async (req, res) => {
     return res.json({ answer: answer.slice(0, 2000), mode: 'ai' });
   } catch (err) {
     console.warn('[assistant] Model unavailable:', err.message);
-    return res.json({ answer: guideAnswer(message), mode: 'guide' });
+    return res.json({ answer: guideAnswer(message), mode: 'guide', reason: err.reason || (err.name === 'AbortError' ? 'timeout' : err.message === 'Empty response' ? 'empty_response' : 'connection_error') });
   }
 });
 

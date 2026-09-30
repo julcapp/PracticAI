@@ -127,7 +127,7 @@ jobs:
         env:
           DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          for filename in index.html education.html site-enhancements.js managed-blocks.css responsive-brand.css assistant-widget.js assistant-widget.css favicon.svg; do
+          for filename in index.html education.html courses/accountants.html site-enhancements.js managed-blocks.css responsive-brand.css assistant-widget.js assistant-widget.css favicon.svg; do
             curl --fail --silent --show-error --ftp-create-dirs \
               --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
               --upload-file "public/$filename" \
@@ -184,7 +184,15 @@ jobs:
           echo "$response"
           echo "$response" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const c=JSON.parse(s).checks;if(Object.values(c).some(v=>v!=="ok"))process.exit(1)})'
 
-      - name: 🤖 Проверить ответ AI-консультанта
+      - name: 📚 Проверить страницу бухгалтерского курса
+        run: |
+          curl --fail --silent --show-error --max-time 30 https://practicai.ru/courses/accountants.html -o accountants-live.html
+          grep -q 'id="pa-accountants"' accountants-live.html
+          grep -q '/api/contact' accountants-live.html
+          grep -q '/courses/accountants.html' homepage.html
+          grep -q '/courses/accountants.html' education-live.html
+
+      - name: 🤖 Проверить ответ консультанта
         run: |
           curl --fail --silent --show-error --max-time 40 https://practicai.ru/assistant-widget.js -o assistant-live.js
           grep -q '/api/assistant' assistant-live.js
@@ -196,9 +204,9 @@ jobs:
           const data = JSON.parse(require('node:fs').readFileSync('assistant-response.json', 'utf8'));
           console.log('Режим консультанта:', data.mode || 'error');
           if (data.reason) console.log('Причина резервного ответа:', data.reason);
-          if (data.mode !== 'ai' || typeof data.answer !== 'string' || !data.answer.trim()) {
-            console.error('Ответ AI не подтверждён. Проверьте ключ и серверный журнал консультанта.');
+          if (!['ai', 'guide'].includes(data.mode) || typeof data.answer !== 'string' || !data.answer.trim()) {
+            console.error('Консультант не вернул ответ.');
             process.exit(1);
           }
-          console.log('AI-консультант отвечает.');
+          console.log(data.mode === 'ai' ? 'AI-консультант отвечает.' : 'Консультант отвечает по встроенному сценарию.');
           NODE

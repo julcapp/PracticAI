@@ -10,12 +10,18 @@ router.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: 'dr
 const facts = [
   'PracticAI предлагает направления для руководителей, коучей и компаний, а также дополнительное образование ООО «Цифрономика».',
   'На образовательной странице перечислены предварительные темы для педагогов, юристов, бухгалтеров и финансистов.',
-  'Утверждённые программы, даты, стоимость, формат, требования и итоговые документы пока не опубликованы. Запрос на запись не подтверждает зачисление.',
+  'Для курса «ИИ в работе бухгалтера»: 19 990 ₽ за участника, 5 занятий, доступ к курсу 3 месяца. Старт в первый понедельник каждого месяца, занятия в 17:30 по Томску (UTC+7), оплата 100%. Дни остальных занятий и итоговый документ уточняются. Страница: /courses/accountants.html. Условия других направлений пока уточняются. Запрос на запись не подтверждает зачисление.',
   'Посетитель может отправить запрос на запись; менеджер уточнит программу и условия. Контакты передаются только через отдельную форму с согласием.',
 ];
 
-function guideAnswer(message) {
+function guideAnswer(message, history = []) {
   const text = message.toLowerCase();
+  const previousTopic = [...history].reverse().find(item => item.role === 'user' && /бухгалтер|педагог|юрист|коуч|руководител|компан|финанс/i.test(item.content));
+  const accountant = /бухгалтер/.test(text) || (!/педагог|юрист|коуч|руководител|компан|финанс/.test(text) && /бухгалтер/i.test(previousTopic?.content || ''));
+  if (accountant) {
+    if (/документ|сертификат|удостоверен|диплом/.test(text)) return 'Итоговый документ курса «ИИ в работе бухгалтера» пока не утверждён. Менеджер уточнит его перед оформлением обучения.';
+    return 'Курс «ИИ в работе бухгалтера»: 19 990 ₽ за участника, 5 занятий, доступ к курсу 3 месяца. Старт — первый понедельник каждого месяца. Время занятий — 17:30 по Томску (UTC+7), оплата — 100%. Дни остальных занятий уточняются при записи. Программа и заявка: https://practicai.ru/courses/accountants.html';
+  }
   if (/цен|стоим|стоит|дат|расписан|мест|документ|сертификат/.test(text)) return 'Утверждённые сроки, стоимость, документы и наличие мест пока не опубликованы. Отправьте запрос на запись, и менеджер уточнит условия выбранного направления.';
   if (/компан|бизнес|корпоратив/.test(text)) return 'Для компаний предусмотрены индивидуальные программы по применению ИИ. Опишите интерес при разговоре с менеджером; сейчас можно отправить запрос на запись по направлению «Для компаний».';
   if (/педагог|юрист|бухгалтер|финанс/.test(text)) return 'На странице образования указаны предварительные темы для педагогов, юристов, бухгалтеров и финансистов. Утверждённые программы ещё не опубликованы. Выберите направление в форме запроса на запись.';
@@ -38,7 +44,7 @@ router.post('/', async (req, res) => {
   if (personalPattern.test(message)) {
     return res.json({ answer: 'Пожалуйста, не отправляйте телефон или email в чат. Для запроса на запись используйте защищённую форму ниже.', mode: 'guide' });
   }
-  if (!process.env.OPENAI_API_KEY) return res.json({ answer: guideAnswer(message), mode: 'guide', reason: 'missing_key' });
+  if (!process.env.OPENAI_API_KEY) return res.json({ answer: guideAnswer(message, history), mode: 'guide', reason: 'missing_key' });
 
   let published = [];
   try {
@@ -85,7 +91,7 @@ router.post('/', async (req, res) => {
     return res.json({ answer: answer.slice(0, 2000), mode: 'ai' });
   } catch (err) {
     console.warn('[assistant] Model unavailable:', err.message);
-    return res.json({ answer: guideAnswer(message), mode: 'guide', reason: err.reason || (err.name === 'AbortError' ? 'timeout' : err.message === 'Empty response' ? 'empty_response' : 'connection_error') });
+    return res.json({ answer: guideAnswer(message, history), mode: 'guide', reason: err.reason || (err.name === 'AbortError' ? 'timeout' : err.message === 'Empty response' ? 'empty_response' : 'connection_error') });
   }
 });
 

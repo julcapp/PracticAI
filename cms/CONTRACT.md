@@ -7,7 +7,7 @@ All admin requests use `/api/admin/cms` and existing Basic auth + `X-Requested-W
 - PUT /documents/:id body {version,payload} -> current GET response. 409 on stale version. Saving doesn't publish.
 - POST /documents/:id/publish body {version} -> current GET response; history stores previous published payload. 409 stale.
 - POST /documents/:id/restore body {version,revisionId} -> restores history payload into DRAFT only, returns GET response. 409 stale.
-- POST /preview body {id,payload,version} -> {html}; no database write; escape safely. For page only. UI iframe sandbox="" srcdoc html, scripts removed in backend.
+- POST /preview body {id,payload,version} -> {html}; no database write; escape safely. For page only. UI iframe sandbox="allow-same-origin" srcdoc html (no allow-scripts or allow-forms, so preview images/CSS can load without executing page scripts), scripts removed in backend.
 - GET /media -> {files:[{url,name,type,size}]} uploaded files only, safe names no deletion.
 - POST /media/upload existing endpoint accepts image data URI <=3MB and application/pdf data URI <=10MB, returns {url}; total Express JSON limit becomes 15mb.
 Errors {error}; validation errors 400, conflict409, absent404.

@@ -29,9 +29,11 @@ textarea{min-height:130px}h1{font-size:28px;margin:0}h2{font-size:22px;margin:0 
 <header><h1>PracticAI · CRM</h1><a href="/admin/cms">Управление сайтом (CMS)</a> · <a href="/">На сайт</a> · <a href="/education.html">Образование</a></header>
 <main>
 <p>Меняйте тексты и изображения, создавайте блоки, смотрите результат и публикуйте, когда всё готово.</p>
-<nav><button id="tab-content">Страницы и блоки</button><button id="tab-contacts" class="ghost">Обратная связь</button><button id="tab-scenarios" class="ghost">Консультант</button></nav>
+<nav><button id="tab-content">Прежний редактор (архив)</button><button id="tab-contacts" class="ghost">Обратная связь</button><button id="tab-scenarios" class="ghost">Консультант</button></nav>
 <p id="message" role="status"></p>
 <section id="content-panel">
+<div class="panel"><h2>Содержимое сайта теперь управляется в CMS</h2><p>Этот редактор оставлен для просмотра прежних материалов. Для изменений откройте <a href="/admin/cms">Управление сайтом (CMS)</a>. Обращения и консультант доступны в соседних вкладках.</p></div>
+<fieldset disabled style="border:0;padding:0;margin:0">
   <div class="panel">
     <h2>Основные тексты и изображение главной</h2>
     <form id="texts-form">
@@ -68,6 +70,7 @@ textarea{min-height:130px}h1{font-size:28px;margin:0}h2{font-size:22px;margin:0 
     <p class="help">Это предпросмотр добавленного блока. Он не меняет сайт до сохранения и публикации.</p>
   </div>
   <div class="panel"><h2>Добавленные блоки</h2><div id="sections">Загрузка...</div></div>
+</fieldset>
 </section>
 <section id="contacts-panel" class="panel hidden"><h2>Обращения</h2><div id="contacts">Загрузка...</div></section>
 

@@ -230,6 +230,12 @@ jobs:
           for appdir in www digital; do
             for filename in index.html education.html courses/accountants.html; do
               backup_name=${filename//\//-}
+              file_status=0
+              curl --head --fail --silent --show-error --max-time 30 \
+                --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+                "ftp://ftp7.hostland.ru/practicai.ru/projects/$appdir/public/$filename" -o /dev/null || file_status=$?
+              if [ "$file_status" -eq 78 ]; then continue; fi
+              if [ "$file_status" -ne 0 ]; then exit "$file_status"; fi
               curl --fail --silent --show-error --max-time 30 \
                 --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
                 --quote "RNFR /practicai.ru/projects/$appdir/public/$filename" \

@@ -183,9 +183,16 @@ jobs:
         env:
           DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
+          # A fresh document root may have no local rules (Passenger is inherited).
+          download_status=0
           curl --fail --silent --show-error --max-time 30 \
             --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
-            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/.htaccess" -o /tmp/cms-htaccess
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/.htaccess" -o /tmp/cms-htaccess || download_status=$?
+          if [ "$download_status" -eq 78 ]; then
+            cp public/.htaccess /tmp/cms-htaccess
+          elif [ "$download_status" -ne 0 ]; then
+            exit "$download_status"
+          fi
           if ! grep -q '# BEGIN PRACTICAI CMS' /tmp/cms-htaccess; then
             curl --fail --silent --show-error --max-time 30 \
               --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \

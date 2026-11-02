@@ -44,7 +44,7 @@ function applySettings(d,settings){
  if(menu){menu.replaceChildren();for(const item of settings.menu.filter(x=>x.visible)){const a=element(d,'a',item.label);a.href=item.href;if(menu.tagName==='UL'){const li=element(d,'li');li.append(a);menu.append(li);}else menu.append(a);}}
  for(const link of d.querySelectorAll('a[href^="mailto:"]'))if(settings.contacts.email){link.href='mailto:'+settings.contacts.email;link.textContent=settings.contacts.email;}
  for(const row of d.querySelectorAll('.contact-detail')){const text=row.textContent;if(text.includes('📍')){row.replaceChildren(element(d,'span',settings.contacts.address));}if(text.includes('📞')){if(settings.contacts.phone)row.replaceChildren(element(d,'span',settings.contacts.phone));else row.remove();}}
- let footer=d.querySelector('footer');if(!footer){footer=element(d,'footer');d.body.append(footer);}
+ let footer=d.querySelector('footer');if(!footer)return;
  const contacts=element(d,'div',null,'cms-contact-info');for(const value of [settings.contacts.organization,settings.contacts.address,settings.contacts.phone,settings.contacts.email])if(value)contacts.append(element(d,'p',value));footer.append(contacts);
 }
 function renderPage(page,snapshot={},options={}){
@@ -62,6 +62,7 @@ function renderPage(page,snapshot={},options={}){
  const byParent=new Map();
  for(const s of page.sections){
   let el=oldSections.get(s.id);
+  if(s.hidden){el?.remove();continue;}
   if(s.kind==='existing'&&el){
    el.hidden=s.hidden;
    for(const f of s.fields){if(f.type==='text'){const target=el.querySelector(`[data-cms-field="${f.key}"]`);if(target)target.textContent=f.value;}

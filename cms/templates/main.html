@@ -1,0 +1,977 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Курсы для руководителей - Программы для компаний | PracticAI</title>
+<meta name="description" content="AI курсы для руководителей и индивидуальные программы для компаний. БЕЗ ТЕХНИЧЕСКОГО ЖАРГОНА. Настоящие лидерские и бизнес-навыки!">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700;800&amp;family=PT+Serif:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a2c6e;
+  --blue: #1e4bd8;
+  --cyan: #00b4d8;
+  --light-blue: #e8f4fd;
+  --white: #ffffff;
+  --gray-light: #f5f7fa;
+  --gray: #6b7280;
+  --dark: #111827;
+  --accent: #0077b6;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Raleway', sans-serif;
+  color: var(--dark);
+  background: var(--white);
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  height: 70px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+.nav-logo img {
+  height: 48px;
+  filter: drop-shadow(0 0 8px rgba(0,210,220,0.4));
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--cyan); }
+
+.nav-cta {
+  background: var(--cyan);
+  color: var(--navy) !important;
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-weight: 700 !important;
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--navy) 0%, #0d3b8e 50%, #0077b6 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 5% 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 20px;
+  margin-bottom: 28px;
+  animation: fadeInUp 0.6s ease both;
+}
+
+.hero h1 {
+  font-family: 'Raleway', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.2;
+  max-width: 800px;
+  margin-bottom: 24px;
+  animation: fadeInUp 0.8s ease 0.1s both;
+}
+
+.hero h1 span {
+  background: linear-gradient(90deg, var(--cyan), #48cae4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.75);
+  max-width: 600px;
+  margin-bottom: 40px;
+  animation: fadeInUp 0.8s ease 0.2s both;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+
+.btn {
+  display: inline-block;
+  padding: 14px 32px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  transition: all 0.25s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--cyan);
+  color: var(--navy);
+}
+.btn-primary:hover { background: #48cae4; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,180,216,0.4); }
+
+.btn-outline {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+.btn-outline:hover { border-color: white; background: rgba(255,255,255,0.1); }
+
+.hero-scroll {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: bounce 2s infinite;
+}
+
+.hero-scroll::after {
+  content: '';
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* SECTIONS */
+section { padding: 90px 5%; }
+
+.container { max-width: 1100px; margin: 0 auto; }
+
+.section-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-family: 'Raleway', sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.25;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+
+/* CHALLENGES */
+.challenges {
+  background: var(--gray-light);
+}
+
+.challenges-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.challenge-list {
+  list-style: none;
+  margin: 24px 0 32px;
+}
+
+.challenge-list li {
+  padding: 12px 0 12px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  position: relative;
+  font-size: 15px;
+  color: #374151;
+}
+
+.challenge-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.challenge-cta {
+  background: var(--navy);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.challenge-cta strong { color: var(--cyan); }
+
+.challenge-img {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(26,44,110,0.2);
+}
+
+.challenge-img-placeholder {
+  width: 100%;
+  height: 380px;
+  background: linear-gradient(135deg, var(--navy), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+}
+
+/* QUOTE */
+.quote-section {
+  background: var(--navy);
+  padding: 60px 5%;
+  text-align: center;
+}
+
+.quote-section blockquote {
+  font-family: 'PT Serif', serif;
+  font-style: italic;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  color: rgba(255,255,255,0.9);
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.quote-section blockquote::before { content: '"'; color: var(--cyan); font-size: 3rem; line-height: 0; vertical-align: -1rem; margin-right: 8px; }
+.quote-section blockquote::after { content: '"'; color: var(--cyan); font-size: 3rem; line-height: 0; vertical-align: -1rem; margin-left: 8px; }
+
+/* PROGRAMS */
+.programs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-top: 48px;
+}
+
+.program-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: white;
+}
+
+.program-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(26,44,110,0.12);
+}
+
+.program-card-img {
+  height: 180px;
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+}
+
+.program-card-body { padding: 28px; }
+
+.program-card-body p {
+  font-size: 14px;
+  color: var(--gray);
+  margin-bottom: 20px;
+  line-height: 1.7;
+}
+
+.program-link {
+  display: inline-block;
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--cyan);
+  padding-bottom: 2px;
+  transition: color 0.2s;
+}
+.program-link:hover { color: var(--navy); }
+
+/* MODULES */
+.modules {
+  background: var(--navy);
+  color: white;
+}
+
+.modules h2 { color: white; }
+
+.modules-intro {
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 48px;
+  font-size: 15px;
+  max-width: 700px;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.module-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 28px;
+  transition: background 0.3s;
+}
+
+.module-card:hover { background: rgba(255,255,255,0.09); }
+
+.module-number {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 8px;
+}
+
+.module-card h3 {
+  color: white;
+  margin-bottom: 14px;
+  font-size: 1rem;
+}
+
+.module-card ul {
+  list-style: none;
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.9;
+}
+
+.module-card ul li::before { content: '· '; color: var(--cyan); }
+
+/* DIFFERENTIATORS */
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.diff-card {
+  background: var(--light-blue);
+  border-left: 4px solid var(--cyan);
+  border-radius: 0 12px 12px 0;
+  padding: 28px;
+}
+
+.diff-card h3 { font-size: 1rem; margin-bottom: 10px; }
+.diff-card p { font-size: 14px; color: var(--gray); line-height: 1.7; }
+
+/* DATES */
+.dates { background: var(--gray-light); text-align: center; }
+.no-dates {
+  display: inline-block;
+  margin-top: 32px;
+  padding: 20px 48px;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #d1d5db;
+  color: var(--gray);
+  font-size: 14px;
+}
+
+/* GLOSSARY */
+.glossary-strip {
+  background: linear-gradient(90deg, var(--navy), var(--blue));
+  padding: 40px 5%;
+  text-align: center;
+}
+
+.glossary-strip h3 { color: white; font-size: 1.3rem; margin-bottom: 8px; }
+.glossary-strip p { color: rgba(255,255,255,0.7); margin-bottom: 20px; }
+
+/* CONTACT */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.contact-info { }
+.contact-info p { color: var(--gray); font-size: 15px; margin-bottom: 28px; line-height: 1.8; }
+
+.contact-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.contact-detail .icon {
+  width: 36px;
+  height: 36px;
+  background: var(--light-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.contact-form {
+  background: var(--gray-light);
+  border-radius: 16px;
+  padding: 40px;
+}
+
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 15px;
+  transition: border-color 0.2s;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.form-group textarea { height: 120px; resize: vertical; }
+
+/* FOOTER */
+footer {
+  background: #0d1b4b;
+  color: rgba(255,255,255,0.65);
+  padding: 60px 5% 30px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.footer-brand img {
+  height: 44px;
+  filter: drop-shadow(0 0 8px rgba(0,210,220,0.4));
+  margin-bottom: 16px;
+}
+
+.footer-brand p { font-size: 13px; line-height: 1.8; }
+
+.footer-col h4 {
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: 10px; }
+.footer-col ul li a {
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+.footer-col ul li a:hover { color: var(--cyan); }
+
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .challenges-grid,
+  .programs-grid,
+  .diff-grid,
+  .contact-grid,
+  .footer-grid { grid-template-columns: 1fr; }
+  .modules-grid { grid-template-columns: 1fr; }
+}
+</style>
+<style>
+.education-integrated{padding:76px 0;background:#fff;color:#163454;scroll-margin-top:90px}
+.education-soft{background:#eaf4fa}.education-integrated h2{margin:10px 0 20px}.education-integrated p{max-width:850px;line-height:1.7;margin:0 0 18px}.education-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:28px}.education-cards article{background:#fff;border:1px solid #d8e6f2;border-radius:14px;padding:26px}.education-cards h3{margin:0 0 15px}.education-cards li{margin:10px 0;line-height:1.5}.education-cards a{color:#1266aa;font-weight:700}
+@media(max-width:800px){.education-cards{grid-template-columns:1fr}.education-integrated{padding:54px 0}}
+</style>
+<style>
+.nav-logo{display:flex;align-items:center;min-width:0}.nav-logo img{max-width:100%;height:auto}.hero h1 span{display:block}.hero img[alt="PracticAI"]{background:transparent;object-fit:contain}
+@media (max-width:768px){.container{width:min(100% - 32px,1120px)}.nav-logo img{width:150px!important}.hero{padding:88px 0 64px}.hero h1{font-size:clamp(34px,10vw,54px);line-height:1.08}.hero h1 br{display:none}.hero-sub{font-size:17px;line-height:1.55}.hero-buttons{display:grid;grid-template-columns:1fr;gap:12px;max-width:360px}.hero-buttons .btn{width:100%;text-align:center}#programs h2{font-size:clamp(30px,8vw,44px);line-height:1.1}#programs h2 br{display:none}.programs-grid,.modules-grid,.challenges-grid{grid-template-columns:1fr!important}.program-card-img{min-height:140px}.challenge-img{min-height:260px}.section-label{font-size:12px}}
+@media (max-width:480px){.container{width:calc(100% - 24px)}.nav-logo img{width:132px!important}nav a{font-size:13px}.hero{padding-top:72px}.hero-badge{font-size:12px}.module-card,.program-card-body{padding:22px}}
+</style><style id="brand-fix">
+.brand-logo{display:inline-flex;align-items:center;gap:.25em;vertical-align:middle;color:#fff;white-space:nowrap;font-family:Raleway,Arial,sans-serif;font-weight:800;line-height:1;letter-spacing:-.045em}
+.brand-mark{width:1em;height:1em;flex:none}
+.brand-word>span{color:#25dec5}
+.brand-logo--nav{font-size:29px}.brand-logo--hero{font-size:clamp(38px,4vw,58px);margin-bottom:25px}.brand-logo--footer{font-size:27px;margin-bottom:16px}
+.hero h1{width:min(100%,1600px);max-width:none;font-size:clamp(2.4rem,3.4vw,4rem);line-height:1.12;margin-left:auto;margin-right:auto}
+.hero h1 span{display:block;white-space:nowrap}
+@media(max-width:900px){.hero h1 span{white-space:normal}.hero h1{font-size:clamp(2rem,6.3vw,3.5rem)}}
+@media(max-width:480px){.brand-logo--nav{font-size:22px}.brand-logo--hero{font-size:36px}.hero h1{font-size:clamp(2rem,9vw,2.7rem)}}
+</style><style>.accountants-mobile-link{display:none;color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:10px 12px;border:1px solid #6e88aa;border-radius:6px}.nav-links{gap:16px}.nav-links a{font-size:11px}@media(max-width:1100px){nav .nav-links{display:none}.accountants-mobile-link{display:inline-block}}@media(max-width:380px){.accountants-mobile-link{font-size:11px;padding:8px}.brand-logo--nav{max-width:175px}}</style><style>@media(max-width:768px){h2{font-size:clamp(27px,6vw,38px);overflow-wrap:anywhere}.nav-logo{min-width:0;overflow:hidden;flex-shrink:1}.accountants-mobile-link{flex-shrink:0}}</style></head>
+<body>
+
+<!-- NAV -->
+<nav data-cms-section="section-1">
+  <a class="nav-logo" href="#">
+    <span class="brand-logo brand-logo--nav" role="img" aria-label="PracticAI"><svg class="brand-mark" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><path d="M18 57V15h24c12 0 19 7 19 17s-7 17-19 17H18" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M34 32h18" fill="none" stroke="#25dec5" stroke-width="6" stroke-linecap="round"></path><circle cx="53" cy="32" r="5" fill="#25dec5"></circle></svg><span class="brand-word">Practic<span>AI</span></span></span></a>
+  <ul class="nav-links">
+    <li><a href="#leaders">Для руководителей</a></li>
+    <li><a href="#coaches">Для коучей</a></li>
+    <li><a href="#business">Для компаний</a></li>
+    <li><a href="#experts">Эксперты</a></li>
+    <li><a href="#education">Образование</a></li>
+    <li><a href="#course-catalog">Курсы</a></li>
+    <li><a href="/courses/accountants.html">Бухгалтерам</a></li>
+    <li><a href="#organization">Об организации</a></li>
+    <li><a href="#contact" class="nav-cta">Связаться</a></li>
+  </ul>
+  <a class="accountants-mobile-link" href="/courses/accountants.html">Бухгалтерам →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" data-cms-section="section-2">
+  <span class="brand-logo brand-logo--hero" role="img" aria-label="PracticAI" data-cms-field-image="section-2-image-12"><svg class="brand-mark" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><path d="M18 57V15h24c12 0 19 7 19 17s-7 17-19 17H18" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M34 32h18" fill="none" stroke="#25dec5" stroke-width="6" stroke-linecap="round"></path><circle cx="53" cy="32" r="5" fill="#25dec5"></circle></svg><span class="brand-word"><span data-cms-field="section-2-text-1">Practic</span><span><span data-cms-field="section-2-text-2">AI</span></span></span></span>
+<span class="hero-badge"><span data-cms-field="section-2-text-3">🚀 PracticAI — лидируй в эпоху ИИ</span></span>
+  <h1><span data-cms-field="section-2-text-4">AI-курсы для руководителей,</span><br><span><span data-cms-field="section-2-text-5">индивидуальные программы для компаний</span></span></h1>
+  <p class="hero-sub"><span data-cms-field="section-2-text-6">БЕЗ ТЕХНИЧЕСКОГО ЖАРГОНА. Настоящие лидерские и бизнес-навыки для тех, кто готов формировать будущее — а не наблюдать за ним.</span></p>
+  <div class="hero-buttons">
+    <a href="#programs" class="btn btn-primary" data-cms-field-link="section-2-link-10"><span data-cms-field="section-2-text-7">Узнать о программах</span></a>
+    <a href="#contact" class="btn btn-outline" data-cms-field-link="section-2-link-11"><span data-cms-field="section-2-text-8">Задать вопрос</span></a>
+  </div>
+  <div class="hero-scroll"><span data-cms-field="section-2-text-9">Прокрутить</span></div>
+</section>
+
+<!-- CHALLENGES -->
+<section class="challenges" id="leaders" data-cms-section="leaders">
+  <div class="container">
+    <div class="challenges-grid">
+      <div>
+        <span class="section-label"><span data-cms-field="leaders-text-1">Актуальность</span></span>
+        <h2><span data-cms-field="leaders-text-2">Руководители сталкиваются с огромными вызовами!</span></h2>
+        <p><span data-cms-field="leaders-text-3">Вот что меняется прямо сейчас:</span></p>
+        <ul class="challenge-list">
+          <li><span data-cms-field="leaders-text-4">ИИ меняет роли, процессы и пути принятия решений</span></li>
+          <li><span data-cms-field="leaders-text-5">Стратегии требуют большей гибкости и постоянной адаптации</span></li>
+          <li><span data-cms-field="leaders-text-6">Лидерство и сотрудничество предполагают новые обязанности</span></li>
+          <li><span data-cms-field="leaders-text-7">Решения всё чаще основываются на данных, а не на интуиции</span></li>
+          <li><span data-cms-field="leaders-text-8">Инновации рождаются в совместном творчестве человека и машины</span></li>
+        </ul>
+        <div class="challenge-cta">
+          <strong><span data-cms-field="leaders-text-9">→ PracticAI</span></strong><span data-cms-field="leaders-text-10"> даёт вам компетенции для того, чтобы </span><strong><span data-cms-field="leaders-text-11">активно управлять переменами!</span></strong>
+        </div>
+      </div>
+      <div>
+        <div class="challenge-img">
+          <div class="challenge-img-placeholder"><span data-cms-field="leaders-text-12">🧠</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-section" data-cms-section="section-4">
+  <blockquote><span data-cms-field="section-4-text-1">PracticAI дала мне практические инструменты для целенаправленного применения ИИ в ежедневной работе. Отличный курс с выдающимися преподавателями!</span></blockquote>
+</div>
+
+<!-- PROGRAMS -->
+<section id="programs" data-cms-section="programs">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="programs-text-1">Программы</span></span>
+    <h2><span data-cms-field="programs-text-2">AI курсы для руководителей,</span><br><span data-cms-field="programs-text-3">индивидуальные программы для компаний</span></h2>
+    <p style="color:var(--gray); max-width:700px;"><span data-cms-field="programs-text-4">Для </span><strong><span data-cms-field="programs-text-5">руководителей</span></strong><span data-cms-field="programs-text-6"> и </span><strong><span data-cms-field="programs-text-7">коучей</span></strong><span data-cms-field="programs-text-8"> разработаны специализированные AI-курсы с разным фокусом. Для </span><strong><span data-cms-field="programs-text-9">компаний</span></strong><span data-cms-field="programs-text-10"> предусмотрен индивидуальный фреймворк AI-трансформации.</span></p>
+
+    <div class="programs-grid">
+      <div class="program-card" id="leaders-card">
+        <div class="program-card-img"><span data-cms-field="programs-text-11">👔</span></div>
+        <div class="program-card-body">
+          <h3><span data-cms-field="programs-text-12">Для руководителей</span></h3>
+          <p><span data-cms-field="programs-text-13">Работайте и управляйте ещё эффективнее благодаря целенаправленной интеграции ИИ в ваши ежедневные процессы!</span></p>
+          <a href="#contact" class="program-link" data-cms-field-link="programs-link-23"><span data-cms-field="programs-text-14">AI-курс для руководителей →</span></a>
+        </div>
+      </div>
+      <div class="program-card" id="coaches">
+        <div class="program-card-img"><span data-cms-field="programs-text-15">🎯</span></div>
+        <div class="program-card-body">
+          <h3><span data-cms-field="programs-text-16">Для коучей и тренеров</span></h3>
+          <p><span data-cms-field="programs-text-17">Развивайте и улучшайте собственный бизнес с помощью грамотного применения ИИ — выделяйтесь среди конкурентов!</span></p>
+          <a href="#contact" class="program-link" data-cms-field-link="programs-link-24"><span data-cms-field="programs-text-18">KI-семинар для коучей →</span></a>
+        </div>
+      </div>
+      <div class="program-card" id="business">
+        <div class="program-card-img"><span data-cms-field="programs-text-19">🏢</span></div>
+        <div class="program-card-body">
+          <h3><span data-cms-field="programs-text-20">Для компаний</span></h3>
+          <p><span data-cms-field="programs-text-21">AI-стратегия: откройте для себя выдающиеся возможности ИИ для вашего бизнеса и сформируйте план трансформации.</span></p>
+          <a href="#contact" class="program-link" data-cms-field-link="programs-link-25"><span data-cms-field="programs-text-22">ИИ для компаний →</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section class="modules" id="modules" data-cms-section="modules">
+  <div class="container">
+    <span class="section-label" style="color:var(--cyan)"><span data-cms-field="modules-text-1">Онлайн гибридное обучение</span></span>
+    <h2><span data-cms-field="modules-text-2">Программа онлайн-обучения</span></h2>
+    <p class="modules-intro"><span data-cms-field="modules-text-3">PracticAI сочетает онлайн Live-курсы, пир-коучинг и микрообучение в современнейшую учебную программу. </span><strong style="color:white;"><span data-cms-field="modules-text-4">Важно:</span></strong><span data-cms-field="modules-text-5"> PracticAI — это не видеокурс, а живое обучение в группе единомышленников!</span></p>
+
+    <div class="modules-grid">
+      <div class="module-card">
+        <div class="module-number"><span data-cms-field="modules-text-6">Модуль 1 — Стартовый</span></div>
+        <h3><span data-cms-field="modules-text-7">Основы</span></h3>
+        <ul>
+          <li><span data-cms-field="modules-text-8">Творческая генерация идей с ИИ как целенаправленным партнёром</span></li>
+          <li><span data-cms-field="modules-text-9">Эффективный бизнес-промптинг для текстов, презентаций и концепций</span></li>
+          <li><span data-cms-field="modules-text-10">Знакомство с ключевыми инструментами: ChatGPT, Perplexity, Notebook LM</span></li>
+        </ul>
+      </div>
+      <div class="module-card">
+        <div class="module-number"><span data-cms-field="modules-text-11">Модуль 2 — Практик</span></div>
+        <h3><span data-cms-field="modules-text-12">Анализ и решения</span></h3>
+        <ul>
+          <li><span data-cms-field="modules-text-13">Стратегические инсайты из внутренних и внешних данных</span></li>
+          <li><span data-cms-field="modules-text-14">Обоснованные процессы принятия решений с помощью ИИ</span></li>
+          <li><span data-cms-field="modules-text-15">Этические принципы и защита данных в руководстве</span></li>
+        </ul>
+      </div>
+      <div class="module-card">
+        <div class="module-number"><span data-cms-field="modules-text-16">Модуль 3 — Мастер</span></div>
+        <h3><span data-cms-field="modules-text-17">Создание собственных ассистентов</span></h3>
+        <ul>
+          <li><span data-cms-field="modules-text-18">Собственные AI-ассистенты для спарринга, обратной связи и коммуникации</span></li>
+          <li><span data-cms-field="modules-text-19">Сложные приложения через модульные Prompt-потоки</span></li>
+          <li><span data-cms-field="modules-text-20">Практические кейсы для управления, инноваций и решений</span></li>
+        </ul>
+      </div>
+      <div class="module-card">
+        <div class="module-number"><span data-cms-field="modules-text-21">Модуль 4 — Пир-коучинг</span></div>
+        <h3><span data-cms-field="modules-text-22">Обмен опытом</span></h3>
+        <ul>
+          <li><span data-cms-field="modules-text-23">Индивидуальная работа с кейсами с AI-поддержкой</span></li>
+          <li><span data-cms-field="modules-text-24">Стратегический обмен с другими руководителями</span></li>
+          <li><span data-cms-field="modules-text-25">Конкретные решения в рамках фреймворка SHIFT</span></li>
+        </ul>
+      </div>
+      <div class="module-card">
+        <div class="module-number"><span data-cms-field="modules-text-26">Модуль 5 — Микрообучение</span></div>
+        <h3><span data-cms-field="modules-text-27">Углублённое изучение</span></h3>
+        <ul>
+          <li><span data-cms-field="modules-text-28">Формулирование ценностных предложений с ИИ</span></li>
+          <li><span data-cms-field="modules-text-29">Создание текстовых рабочих процессов типа ghostwriter</span></li>
+          <li><span data-cms-field="modules-text-30">Сравнение инструментов изображений, музыки и аватаров</span></li>
+          <li><span data-cms-field="modules-text-31">Тестирование приложений Perplexity и Consensus</span></li>
+          <li><span data-cms-field="modules-text-32">Проверка соответствия нормам ИИ в компании</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFFERENTIATORS -->
+<section id="about" data-cms-section="about">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="about-text-1">Почему мы</span></span>
+    <h2><span data-cms-field="about-text-2">Что делает PracticAI особенной?</span></h2>
+    <p style="color:var(--gray); max-width:700px; margin-bottom: 0;"><span data-cms-field="about-text-3">PracticAI — это не классический семинар по ИИ, а стратегический формат обучения и трансформации для тех, кто переосмысливает лидерство и активно строит будущее.</span></p>
+
+    <div class="diff-grid">
+      <div class="diff-card">
+        <h3><span data-cms-field="about-text-4">🎯 Фокус на лидерстве</span></h3>
+        <p><span data-cms-field="about-text-5">Никакого лишнего технического языка — только настоящие «бизнес-рычаги». Практично, применимо, действенно.</span></p>
+      </div>
+      <div class="diff-card">
+        <h3><span data-cms-field="about-text-6">🔄 Фреймворк SHIFT</span></h3>
+        <p><span data-cms-field="about-text-7">Основан на целостном фреймворке: Strategy, Humans, Integration, Future, Transformation. Системный подход к изменениям.</span></p>
+      </div>
+      <div class="diff-card">
+        <h3><span data-cms-field="about-text-8">📚 Гибридное обучение</span></h3>
+        <p><span data-cms-field="about-text-9">Live-тренинги + пир-коучинг + микрообучение. Практичная программа гибридного обучения для реального применения.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATES -->
+<section id="experts" class="experts-section" data-cms-section="experts"><div class="container"><h2><span data-cms-field="experts-text-1">Эксперты PracticAI</span></h2><p><span data-cms-field="experts-text-2">Карточки специалистов появятся после подтверждения данных.</span></p><div class="experts-grid"></div></div></section><section class="dates" data-cms-section="section-9">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="section-9-text-1">Расписание</span></span>
+    <h2><span data-cms-field="section-9-text-2">Ближайшие даты</span></h2>
+    <div class="no-dates"><span data-cms-field="section-9-text-3">
+      📅 Актуальных дат нет. Новые сроки в разработке.</span><br>
+      <a href="#contact" style="color:var(--blue); font-weight:700;" data-cms-field-link="section-9-link-5"><span data-cms-field="section-9-text-4">Запишитесь на уведомление →</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- GLOSSARY -->
+<div class="glossary-strip" data-cms-section="section-10">
+  <div class="container">
+    <h3><span data-cms-field="section-10-text-1">🔤 Словарь терминов ИИ</span></h3>
+    <p><span data-cms-field="section-10-text-2">Не знаете разницу между LLM и RAG? Разобраться в AI-терминологии поможет наш глоссарий.</span></p>
+    <a href="#" class="btn btn-primary" data-cms-field-link="section-10-link-4"><span data-cms-field="section-10-text-3">Открыть глоссарий ИИ</span></a>
+  </div>
+</div>
+
+
+<!-- ОБРАЗОВАТЕЛЬНОЕ НАПРАВЛЕНИЕ -->
+<section id="education" class="education-integrated" data-cms-section="education">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="education-text-1">ООО «Цифрономика»</span></span>
+    <h2><span data-cms-field="education-text-2">Дополнительное образование в PracticAI</span></h2>
+    <p><span data-cms-field="education-text-3">Направления для детей и взрослых, а также дополнительное профессиональное образование: повышение квалификации и профессиональная переподготовка.</span></p>
+    <p><span data-cms-field="education-text-4">Перечень ниже — предварительные темы. Состав программ, сроки, стоимость и документы об обучении будут опубликованы после утверждения.</span></p>
+    <a class="btn btn-primary" href="/education.html" data-cms-field-link="education-link-6"><span data-cms-field="education-text-5">Образовательное направление целиком</span></a>
+  </div>
+</section>
+<section id="course-catalog" class="education-integrated education-soft" data-cms-section="course-catalog">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="course-catalog-text-1">Каталог направлений</span></span>
+    <h2><span data-cms-field="course-catalog-text-2">Курсы</span></h2>
+    <div class="education-cards">
+      <article><h3><span data-cms-field="course-catalog-text-3">Для педагогов</span></h3><ul><li><span data-cms-field="course-catalog-text-4">Методика преподавания школьных дисциплин</span></li><li><span data-cms-field="course-catalog-text-5">Интерактивная среда в начальной школе</span></li><li><span data-cms-field="course-catalog-text-6">Преемственность начального и основного образования</span></li><li><span data-cms-field="course-catalog-text-7">Промежуточная и итоговая аттестация</span></li></ul><a href="/education.html#courses" data-cms-field-link="course-catalog-link-19"><span data-cms-field="course-catalog-text-8">Подробнее о курсах →</span></a></article>
+      <article><h3><span data-cms-field="course-catalog-text-9">Для юристов</span></h3><ul><li><span data-cms-field="course-catalog-text-10">Договорное право и судебная практика</span></li><li><span data-cms-field="course-catalog-text-11">Правовые вопросы деятельности организации</span></li><li><span data-cms-field="course-catalog-text-12">Работа с проблемной задолженностью</span></li><li><span data-cms-field="course-catalog-text-13">Налоговые последствия заключения договоров</span></li></ul><a href="/education.html#courses" data-cms-field-link="course-catalog-link-20"><span data-cms-field="course-catalog-text-14">Подробнее о курсах →</span></a></article>
+      <article><h3 data-cms-course="title">Для бухгалтеров и финансистов</h3><ul><li data-cms-course="title">ИИ в работе бухгалтера: проект практического курса</li><li><span data-cms-field="course-catalog-text-15">Документы, таблицы и сверки</span></li><li><span data-cms-field="course-catalog-text-16">Рабочая переписка и пояснения к цифрам</span></li><li><span data-cms-field="course-catalog-text-17">Контроль результатов и свой сценарий с ИИ</span></li></ul><p data-cms-course="all">19 990 ₽ · 5 занятий · доступ 3 месяца. Старт — первый понедельник месяца.</p><a href="/courses/accountants.html" data-cms-field-link="course-catalog-link-21"><span data-cms-field="course-catalog-text-18">Программа курса и заявка →</span></a></article>
+    </div>
+  </div>
+</section>
+<section id="organization" class="education-integrated" data-cms-section="organization">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="organization-text-1">Открытые сведения</span></span>
+    <h2><span data-cms-field="organization-text-2">Сведения об образовательной организации</span></h2>
+    <p><strong><span data-cms-field="organization-text-3">Общество с ограниченной ответственностью «Цифрономика»</span></strong><span data-cms-field="organization-text-4"> · ОГРН 1187031050733 · ИНН 7017438363 · КПП 701701001. Директор — Ильин А. В.</span></p>
+    <p><span data-cms-field="organization-text-5">Структура и управление, документы, образование, руководство и педагогический состав, оснащение, платные услуги, финансы и другие подразделы собраны на отдельной странице. Неподтверждённые сведения отмечены там прямо.</span></p>
+    <a class="btn btn-primary" href="/education.html#details" data-cms-field-link="organization-link-7"><span data-cms-field="organization-text-6">Открыть все сведения об организации</span></a>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" data-cms-section="contact">
+  <div class="container">
+    <span class="section-label"><span data-cms-field="contact-text-1">Контакт</span></span>
+    <h2><span data-cms-field="contact-text-2">Есть вопросы? Давайте поговорим!</span></h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <p><span data-cms-field="contact-text-3">Есть вопросы о содержании программ? Или вы хотите узнать, как PracticAI может быть реализована в вашей компании? Мы рады личному общению с вами!</span></p>
+        <div class="contact-detail">
+          <div class="icon"><span data-cms-field="contact-text-4">📍</span></div>
+          <span><span data-cms-field="contact-text-5">Москва · Санкт-Петербург · Онлайн</span></span>
+        </div>
+        <div class="contact-detail">
+          <div class="icon"><span data-cms-field="contact-text-6">🌐</span></div>
+          <span><span data-cms-field="contact-text-7">PracticAI.ru</span></span>
+        </div>
+        <div class="contact-detail">
+          <div class="icon"><span data-cms-field="contact-text-8">✉️</span></div>
+          <a href="mailto:practic@practicai.ru" data-cms-field-link="contact-link-17"><span data-cms-field="contact-text-9">practic@practicai.ru</span></a>
+        </div>
+        <div class="contact-detail">
+          <div class="icon"><span data-cms-field="contact-text-10">📞</span></div>
+          <span><span data-cms-field="contact-text-11">+7 (495) 000-00-00</span></span>
+        </div>
+      </div>
+      <div class="contact-form">
+        <div class="form-group">
+          <label><span data-cms-field="contact-text-12">Имя / Фамилия *</span></label>
+          <input type="text" placeholder="Иван Иванов">
+        </div>
+        <div class="form-group">
+          <label><span data-cms-field="contact-text-13">Телефон *</span></label>
+          <input type="tel" placeholder="+7 (___) ___-__-__">
+        </div>
+        <div class="form-group">
+          <label><span data-cms-field="contact-text-14">Email</span></label>
+          <input type="email" placeholder="ivan@company.ru">
+        </div>
+        <div class="form-group">
+          <label><span data-cms-field="contact-text-15">Ваше сообщение *</span></label>
+          <textarea placeholder="Расскажите о вашем запросе..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%; font-size:15px; padding:16px;" onclick="alert('Спасибо! Мы свяжемся с вами в ближайшее время.')"><span data-cms-field="contact-text-16">Отправить сообщение</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer data-cms-section="section-15">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="brand-logo brand-logo--footer" role="img" aria-label="PracticAI" data-cms-field-image="section-15-image-31"><svg class="brand-mark" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><path d="M18 57V15h24c12 0 19 7 19 17s-7 17-19 17H18" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M34 32h18" fill="none" stroke="#25dec5" stroke-width="6" stroke-linecap="round"></path><circle cx="53" cy="32" r="5" fill="#25dec5"></circle></svg><span class="brand-word"><span data-cms-field="section-15-text-1">Practic</span><span><span data-cms-field="section-15-text-2">AI</span></span></span></span><p><span data-cms-field="section-15-text-3">PracticAI — AI курсы для руководителей и индивидуальные программы для компаний. Практическое применение ИИ без технического жаргона.</span></p>
+      </div>
+      <div class="footer-col">
+        <h4><span data-cms-field="section-15-text-4">Программы</span></h4>
+        <ul>
+          <li><a href="#leaders" data-cms-field-link="section-15-link-20"><span data-cms-field="section-15-text-5">AI-курс для руководителей</span></a></li>
+          <li><a href="#coaches" data-cms-field-link="section-15-link-21"><span data-cms-field="section-15-text-6">KI-семинар для коучей</span></a></li>
+          <li><a href="#business" data-cms-field-link="section-15-link-22"><span data-cms-field="section-15-text-7">ИИ для компаний</span></a></li>
+          <li><a href="#experts" data-cms-field-link="section-15-link-23"><span data-cms-field="section-15-text-8">Эксперты</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4><span data-cms-field="section-15-text-9">Информация</span></h4>
+        <ul>
+          <li><a href="#about" data-cms-field-link="section-15-link-24"><span data-cms-field="section-15-text-10">О нас</span></a></li>
+          <li><a href="#" data-cms-field-link="section-15-link-25"><span data-cms-field="section-15-text-11">Блог</span></a></li>
+          <li><a href="#" data-cms-field-link="section-15-link-26"><span data-cms-field="section-15-text-12">Глоссарий ИИ</span></a></li>
+          <li><a href="#contact" data-cms-field-link="section-15-link-27"><span data-cms-field="section-15-text-13">Контакт</span></a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4><span data-cms-field="section-15-text-14">Правовая информация</span></h4>
+        <ul>
+          <li><a href="#" data-cms-field-link="section-15-link-28"><span data-cms-field="section-15-text-15">Политика конфиденциальности</span></a></li>
+          <li><a href="#" data-cms-field-link="section-15-link-29"><span data-cms-field="section-15-text-16">Условия использования</span></a></li>
+          <li><a href="#" data-cms-field-link="section-15-link-30"><span data-cms-field="section-15-text-17">Оферта</span></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span><span data-cms-field="section-15-text-18">© 2025 PracticAI · PracticAI.ru · AI в практике — AI для руководителей</span></span>
+      <span><span data-cms-field="section-15-text-19">Москва, Россия</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Intersection Observer for fade-in
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.program-card, .module-card, .diff-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+</script>
+
+<script src="/site-enhancements.js" defer=""></script>
+<script src="/assistant-widget.js" defer=""></script>
+
+
+</body></html>

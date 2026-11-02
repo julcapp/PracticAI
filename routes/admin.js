@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const db = require('../db');
 const {answer: scenarioAnswer, validateScenario, directions} = require('../consultant/engine');
 const {ensureScenarios, loadScenarios} = require('../consultant/store');
+const {getPublished,ensureCMS}=require('../cms/store');
+const {withPublishedCourse}=require('../cms/model');
 
 const schema = `CREATE TABLE IF NOT EXISTS site_content (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -98,6 +100,7 @@ router.get('/diagnostics',async(_req,res)=>{
     checks.contacts='ok';
     await ensureScenarios();
     checks.assistant_scenarios='ok';
+    await ensureCMS();checks.cms_documents='ok';
   }
   catch (e) { checks.schema_creation=e.code||'error'; }
   return res.json({checks});
@@ -139,7 +142,7 @@ router.patch('/contacts/:id',async(req,res,next)=>{
 });
 
 router.get('/scenarios',async(_req,res,next)=>{
-  try{res.json({scenarios:await loadScenarios(),directions});}catch(e){next(e);}
+  try{res.json({scenarios:withPublishedCourse(await loadScenarios(),await getPublished()),directions});}catch(e){next(e);}
 });
 router.post('/scenarios/preview',async(req,res)=>{
   const {scenario,message}=req.body||{};

@@ -18,7 +18,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(['/admin', '/admin.html', '/api/admin'], rateLimit({
@@ -32,6 +32,10 @@ app.use(['/admin', '/admin.html', '/api/admin'], rateLimit({
 // Статика из папки public/
 const { router: adminRouter, authenticate } = require('./routes/admin');
 const publicDir = path.join(__dirname, 'public');
+const cms = require('./cms/routes');
+app.use(cms.publicPages);
+app.get('/admin/cms', authenticate, (_req,res) => res.sendFile(path.join(__dirname,'views','cms.html')));
+app.use('/api/admin/cms',authenticate,cms.admin);
 app.get('/admin', authenticate, (_req, res) => res.sendFile(path.join(__dirname, 'views', 'admin.html')));
 app.get('/admin.html', authenticate, (_req, res) => res.sendFile(path.join(__dirname, 'views', 'admin.html')));
 app.get('/', (_req, res, next) => {
@@ -70,3 +74,4 @@ const server = app.listen(PORT, () => {
 });
 
 module.exports = app;
+

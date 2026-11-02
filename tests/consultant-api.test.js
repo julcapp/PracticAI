@@ -16,6 +16,7 @@ require.cache[dbPath]={id:dbPath,filename:dbPath,loaded:true,exports:{
 }};
 require.cache[storePath]={id:storePath,filename:storePath,loaded:true,exports:{ensureScenarios:async()=>{},loadScenarios:async()=>rows}};
 process.env.ADMIN_USER='testadmin';process.env.ADMIN_PASSWORD='test-password-only';
+const cmsPath=require.resolve('../cms/store');require.cache[cmsPath]={id:cmsPath,filename:cmsPath,loaded:true,exports:{getPublished:async()=>({}),ensureCMS:async()=>{}}};
 const app=express();app.use(express.json());app.use('/api/admin',require('../routes/admin').router);app.use('/api/assistant',require('../routes/assistant'));
 let server,base;
 before(async()=>{server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));base='http://127.0.0.1:'+server.address().port;});

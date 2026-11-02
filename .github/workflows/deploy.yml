@@ -133,7 +133,7 @@ jobs:
         env:
           DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          for filename in index.html education.html courses/accountants.html site-enhancements.js managed-blocks.css responsive-brand.css assistant-widget.js assistant-widget.css favicon.svg; do
+          for filename in index.html education.html courses/accountants.html site-enhancements.js managed-blocks.css responsive-brand.css assistant-widget.js assistant-widget.css favicon.svg cms-admin.js cms-admin.css cms-public.css; do
             curl --fail --silent --show-error --ftp-create-dirs \
               --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
               --upload-file "public/$filename" \
@@ -148,12 +148,39 @@ jobs:
             --upload-file public/brand/practicai-mark.svg \
             "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/brand/practicai-mark.svg"
 
+      - name: 🧭 Передать страницы в CMS с резервной копией правил
+        env:
+          DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          curl --fail --silent --show-error --max-time 30 \
+            --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/.htaccess" -o /tmp/cms-htaccess
+          if ! grep -q '# BEGIN PRACTICAI CMS' /tmp/cms-htaccess; then
+            curl --fail --silent --show-error --max-time 30 \
+              --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+              --upload-file /tmp/cms-htaccess \
+              "ftp://ftp7.hostland.ru/practicai.ru/projects/htaccess-before-cms.conf"
+          fi
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import re
+          p=Path('/tmp/cms-htaccess')
+          original=p.read_text()
+          original=re.sub(r'\n?# BEGIN PRACTICAI CMS.*?# END PRACTICAI CMS\n?', '', original, flags=re.S)
+          p.write_text(original.rstrip()+"\n\n# BEGIN PRACTICAI CMS\nRewriteEngine On\nRewriteRule ^(?:index[.]html)?$ /cms-render/main [L,PT]\nRewriteRule ^education[.]html$ /cms-render/education [L,PT]\nRewriteRule ^courses/accountants[.]html$ /cms-render/accountants [L,PT]\n# END PRACTICAI CMS\n")
+          PYCODE
+          curl --fail --silent --show-error --max-time 30 \
+            --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+            --upload-file /tmp/cms-htaccess \
+            "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/.htaccess"
+
       - name: 📄 Проверить разделы на основном домене
         run: |
           for attempt in 1 2 3 4 5; do
             if curl --fail --silent --show-error --max-time 20 https://practicai.ru/ -o homepage.html \
               && grep -q 'id="course-catalog"' homepage.html \
               && grep -q 'id="organization"' homepage.html \
+              && grep -q 'data-practicai-cms="1"' homepage.html \
               && curl --fail --silent --show-error --max-time 20 https://practicai.ru/education.html -o education-live.html \
               && grep -q 'id="details"' education-live.html; then
               echo "Главная, каталог и сведения доступны"
@@ -182,6 +209,12 @@ jobs:
           curl --fail --silent --show-error --max-time 25 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/admin -o crm-live.html
           grep -q 'Предварительный просмотр блока' crm-live.html
           grep -q 'id="scenarios-panel"' crm-live.html
+          curl --fail --silent --show-error --max-time 40 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/admin/cms -o cms-live.html
+          grep -q '/cms-admin.js' cms-live.html
+          curl --fail --silent --show-error --max-time 50 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/api/admin/cms/documents -o cms-documents.json
+          node -e 'const d=JSON.parse(require("node:fs").readFileSync("cms-documents.json","utf8"));if(d.documents.length<6)process.exit(1)'
+          curl --fail --silent --show-error --max-time 40 https://practicai.ru/cms-render/main -o cms-rendered.html
+          grep -q 'data-practicai-cms="1"' cms-rendered.html
           curl --fail --silent --show-error --max-time 25 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/api/admin/scenarios -o scenarios-live.json
           node -e 'const d=JSON.parse(require("node:fs").readFileSync("scenarios-live.json","utf8"));if(!Array.isArray(d.scenarios)||!Array.isArray(d.directions))process.exit(1)'
           curl --fail --silent --show-error --max-time 25 https://practicai.ru/managed-blocks.css -o blocks-live.css
@@ -225,4 +258,5 @@ jobs:
           if(data.mode !== 'guide' || !Array.isArray(data.choices)) process.exit(1);
           console.log('Консультант отвечает по управляемым сценариям.');
           NODE
+
 

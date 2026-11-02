@@ -1,11 +1,12 @@
 'use strict';
 (async()=>{
   const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/managed-blocks.css';document.head.append(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'/responsive-brand.css'}));document.head.append(stylesheet);
+  const cmsManaged=document.documentElement.hasAttribute('data-practicai-cms');
   const isEducation=location.pathname==='/education.html';
   if(!isEducation){
     const nav=document.querySelector('nav');
     const dates=document.querySelector('.dates');
-    if(dates && !document.querySelector('#experts')){
+    if(!cmsManaged && dates && !document.querySelector('#experts')){
       const section=document.createElement('section');section.id='experts';section.className='experts-section';
       section.innerHTML='<div class="container"><span class="section-label">Команда</span><h2>Эксперты PracticAI</h2><p class="experts-intro">Карточки специалистов появятся после подтверждения данных.</p><div class="experts-grid">'+Array.from({length:6},(_,i)=>`<article class="expert-card"><div class="expert-avatar">${String(i+1).padStart(2,'0')}</div><div><h3>Эксперт ${i+1}</h3><p>Данные специалиста будут добавлены позже.</p></div></article>`).join('')+'</div></div>';
       dates.before(section);
@@ -35,6 +36,7 @@
       }
     }
   }
+  if(cmsManaged)return;
   try{
     const response=await fetch('/api/content');if(!response.ok)return;
     const {sections,texts}=await response.json();
@@ -65,3 +67,4 @@
     }
   }catch(e){console.warn('Дополнительные разделы временно недоступны')}
 })();
+

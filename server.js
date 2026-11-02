@@ -1,4 +1,5 @@
 'use strict';
+require('./bootstrap-runtime').installRuntime();
 
 const express  = require('express');
 const path     = require('path');

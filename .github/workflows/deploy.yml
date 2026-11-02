@@ -32,6 +32,11 @@ jobs:
       - name: 📦 Оставить только зависимости сервера
         run: npm prune --omit=dev
 
+      - name: 📦 Упаковать зависимости для быстрой передачи
+        run: |
+          tar -czf node-runtime.tgz node_modules
+          tar -tzf node-runtime.tgz > /dev/null
+
       - name: 🧩 Собрать главную с образовательными разделами
         run: python3 scripts/prepare-public.py
 
@@ -90,7 +95,9 @@ jobs:
             .env.example
             README.md
             *.log
-            node_modules/.cache/**
+            node_modules/**
+            node-runtime.tgz
+            tmp/restart.txt
             htdocs_only/**
             diagnostics/**
             security_patch/**
@@ -112,10 +119,34 @@ jobs:
             .env.example
             README.md
             *.log
-            node_modules/.cache/**
+            node_modules/**
+            node-runtime.tgz
+            tmp/restart.txt
             htdocs_only/**
             diagnostics/**
             security_patch/**
+
+      - name: 📦 Передать архив зависимостей и перезапустить приложения
+        env:
+          DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          for appdir in www digital; do
+            curl --fail --silent --show-error --max-time 180 --ftp-create-dirs \
+              --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+              --upload-file node-runtime.tgz \
+              "ftp://ftp7.hostland.ru/practicai.ru/projects/$appdir/node-runtime.tgz.upload"
+            curl --fail --silent --show-error --max-time 30 \
+              --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+              --quote "RNFR /practicai.ru/projects/$appdir/node-runtime.tgz.upload" \
+              --quote "RNTO /practicai.ru/projects/$appdir/node-runtime.tgz" \
+              "ftp://ftp7.hostland.ru/" -o /dev/null
+          done
+          for appdir in www digital; do
+            curl --fail --silent --show-error --max-time 30 --ftp-create-dirs \
+              --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+              --upload-file tmp/restart.txt \
+              "ftp://ftp7.hostland.ru/practicai.ru/projects/$appdir/tmp/restart.txt"
+          done
 
       - name: 🔒 Закрыть старый файл миграции в htdocs
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

@@ -29,7 +29,7 @@ textarea{min-height:130px}h1{font-size:28px;margin:0}h2{font-size:22px;margin:0 
 <header><h1>PracticAI · CRM</h1><a href="/">На сайт</a> · <a href="/education.html">Образование</a></header>
 <main>
 <p>Меняйте тексты и изображения, создавайте блоки, смотрите результат и публикуйте, когда всё готово.</p>
-<nav><button id="tab-content">Страницы и блоки</button><button id="tab-contacts" class="ghost">Обратная связь</button></nav>
+<nav><button id="tab-content">Страницы и блоки</button><button id="tab-contacts" class="ghost">Обратная связь</button><button id="tab-scenarios" class="ghost">Консультант</button></nav>
 <p id="message" role="status"></p>
 <section id="content-panel">
   <div class="panel">
@@ -70,6 +70,30 @@ textarea{min-height:130px}h1{font-size:28px;margin:0}h2{font-size:22px;margin:0 
   <div class="panel"><h2>Добавленные блоки</h2><div id="sections">Загрузка...</div></div>
 </section>
 <section id="contacts-panel" class="panel hidden"><h2>Обращения</h2><div id="contacts">Загрузка...</div></section>
+
+<section id="scenarios-panel" class="hidden">
+  <div class="panel"><h2>Сценарии консультанта</h2>
+    <p>Ответы работают без внешнего AI. Включённый сценарий становится доступен после сохранения. Неизвестные условия уточняет менеджер.</p>
+    <form id="scenario-form">
+      <input type="hidden" id="sc-id">
+      <div class="grid"><label>Код сценария<input id="sc-slug" required maxlength="80" pattern="[a-z0-9-]{2,80}" placeholder="accountants-price"></label>
+      <label>Вопрос / название<input id="sc-question" required maxlength="200"></label></div>
+      <label>Ключевые фразы<textarea id="sc-keywords" required maxlength="1000" placeholder="стоим&#10;цен&#10;сколько стоит"></textarea></label>
+      <p class="help">Одна фраза на строку, до 30 фраз. Можно указать начало слова: «бухгалтер», «стоим». Совпадения букв внутри посторонних слов не учитываются.</p>
+      <label>Ответ<textarea id="sc-answer" required maxlength="2000"></textarea></label>
+      <div class="grid"><label>Направление<select id="sc-direction"><option value="">Общий сценарий</option></select></label>
+      <label>Приоритет<input id="sc-priority" type="number" value="0" min="-10000" max="10000" step="1" required></label></div>
+      <label>Статус<select id="sc-enabled"><option value="0">Выключен</option><option value="1">Включён</option></select></label>
+      <p class="help">При совпадении сначала выбирается сценарий направления, затем более высокий приоритет. Не публикуйте неподтверждённые цены, даты и документы.</p>
+      <div class="actions"><button type="submit">Сохранить сценарий</button><button type="button" id="sc-new" class="ghost">Новый сценарий</button></div>
+    </form>
+    <h2>Проверить перед включением</h2>
+    <p class="help">Проверяется только текущий текст формы, даже если сценарий выключен. Проверка ничего не сохраняет. После сохранения проверьте диалог виджета на сайте.</p>
+    <form id="scenario-preview-form"><label>Тестовый вопрос<input id="sc-test" maxlength="800" required></label><button type="submit">Проверить ответ</button></form>
+    <p id="sc-preview" role="status" style="white-space:pre-wrap;overflow-wrap:anywhere"></p>
+  </div>
+  <div class="panel"><h2>Сохранённые сценарии</h2><button type="button" id="sc-refresh" class="ghost">Обновить список</button><div id="scenario-list"></div></div>
+</section>
 </main>
 <script>
 const $=selector=>document.querySelector(selector),message=$('#message');let sections=[];
@@ -156,4 +180,45 @@ $('#tab-content').onclick=()=>{$('#content-panel').classList.remove('hidden');$(
 $('#tab-contacts').onclick=()=>{$('#content-panel').classList.add('hidden');$('#contacts-panel').classList.remove('hidden');loadContacts().catch(e=>say(e.message))};
 reset();Promise.all([loadSections(),loadTexts()]).catch(e=>say(e.message));
 </script>
+
+<script>
+(() => {
+  const fields=['slug','question','keywords','answer','direction','enabled','priority'];
+  let scenarios=[];
+  const get=()=>Object.fromEntries(fields.map(k=>[k,['priority','enabled'].includes(k)?Number($('#sc-'+k).value):$('#sc-'+k).value]));
+  function clearScenario(){ $('#scenario-form').reset();$('#sc-id').value='';$('#sc-preview').textContent=''; }
+  function render(){
+    const root=$('#scenario-list');root.replaceChildren();
+    if(!scenarios.length)root.textContent='Сценариев пока нет. Добавьте первый.';
+    for(const d of scenarios){
+      const article=document.createElement('article');article.className='item';
+      const title=document.createElement('h3');title.textContent=d.question;
+      const body=document.createElement('p');body.textContent=d.answer;body.style.whiteSpace='pre-wrap';body.style.overflowWrap='anywhere';
+      article.append(title,row('Статус:',Number(d.enabled)?'Включён':'Выключен'),row('Направление:',d.direction||'Общий'),body);
+      const actions=document.createElement('div');actions.className='actions';
+      const edit=document.createElement('button');edit.textContent='Изменить';edit.onclick=()=>{ $('#sc-id').value=d.id;for(const k of fields)$('#sc-'+k).value=d[k];$('#sc-preview').textContent='';$('#scenario-form').scrollIntoView({behavior:'smooth'}); };
+      const remove=document.createElement('button');remove.textContent='Удалить';remove.className='danger';
+      remove.onclick=async()=>{if(!confirm('Удалить сценарий «'+d.question+'»?'))return;remove.disabled=true;try{await api('scenarios/'+d.id,{method:'DELETE'});if($('#sc-id').value===String(d.id))clearScenario();await load();say('Сценарий удалён');}catch(e){say(e.message);}finally{remove.disabled=false;}};
+      actions.append(edit,remove);article.append(actions);root.append(article);
+    }
+  }
+  async function load(){
+    const data=await api('scenarios');scenarios=data.scenarios;
+    const select=$('#sc-direction'),old=select.value;select.replaceChildren(new Option('Общий сценарий',''));
+    for(const d of data.directions)select.add(new Option(d,d));select.value=old;render();
+  }
+  $('#tab-scenarios').onclick=()=>{$('#content-panel').classList.add('hidden');$('#contacts-panel').classList.add('hidden');$('#scenarios-panel').classList.remove('hidden');load().catch(e=>say(e.message));};
+  for(const id of ['tab-content','tab-contacts'])$('#'+id).addEventListener('click',()=>$('#scenarios-panel').classList.add('hidden'));
+  $('#sc-new').onclick=clearScenario;$('#sc-refresh').onclick=()=>load().catch(e=>say(e.message));
+  $('#scenario-form').onsubmit=async e=>{
+    e.preventDefault();const id=$('#sc-id').value,button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
+    try{const result=await api('scenarios'+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(get())});$('#sc-id').value=id||result.id;say('Сценарий сохранён');await load();}catch(err){say(err.message);}finally{button.disabled=false;}
+  };
+  $('#scenario-preview-form').onsubmit=async e=>{
+    e.preventDefault();const button=e.currentTarget.querySelector('button'),result=$('#sc-preview');button.disabled=true;result.textContent='Проверяем…';
+    try{const data=await api('scenarios/preview',{method:'POST',body:JSON.stringify({scenario:get(),message:$('#sc-test').value})});result.textContent=data.answer+(data.showLead?'\nСледующий шаг: форма заявки.':'');}catch(err){result.textContent=err.message;}finally{button.disabled=false;}
+  };
+})();
+</script>
 </body></html>
+

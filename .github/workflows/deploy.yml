@@ -23,8 +23,14 @@ jobs:
         with:
           node-version: '25'
 
-      - name: 🔧 npm install
-        run: npm install --omit=dev
+      - name: 🔧 Установить зависимости
+        run: npm ci
+
+      - name: 🧪 Проверить консультанта и CRM до публикации
+        run: npm test
+
+      - name: 📦 Оставить только зависимости сервера
+        run: npm prune --omit=dev
 
       - name: 🧩 Собрать главную с образовательными разделами
         run: python3 scripts/prepare-public.py
@@ -173,6 +179,9 @@ jobs:
         run: |
           curl --fail --silent --show-error --max-time 25 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/admin -o crm-live.html
           grep -q 'Предварительный просмотр блока' crm-live.html
+          grep -q 'id="scenarios-panel"' crm-live.html
+          curl --fail --silent --show-error --max-time 25 --user "admin:$DEPLOY_ADMIN_PASSWORD" https://practicai.ru/api/admin/scenarios -o scenarios-live.json
+          node -e 'const d=JSON.parse(require("node:fs").readFileSync("scenarios-live.json","utf8"));if(!Array.isArray(d.scenarios)||!Array.isArray(d.directions))process.exit(1)'
           curl --fail --silent --show-error --max-time 25 https://practicai.ru/managed-blocks.css -o blocks-live.css
           grep -q '.managed-section' blocks-live.css
 
@@ -208,5 +217,7 @@ jobs:
             console.error('Консультант не вернул ответ.');
             process.exit(1);
           }
-          console.log(data.mode === 'ai' ? 'AI-консультант отвечает.' : 'Консультант отвечает по встроенному сценарию.');
+          if(data.mode !== 'guide' || !Array.isArray(data.choices)) process.exit(1);
+          console.log('Консультант отвечает по управляемым сценариям.');
           NODE
+

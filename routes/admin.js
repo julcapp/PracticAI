@@ -2,6 +2,8 @@
 const router = require('express').Router();
 const crypto = require('crypto');
 const db = require('../db');
+const {answer: scenarioAnswer, validateScenario, directions} = require('../consultant/engine');
+const {ensureScenarios, loadScenarios} = require('../consultant/store');
 
 const schema = `CREATE TABLE IF NOT EXISTS site_content (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -68,7 +70,7 @@ function authenticate(req,res,next) {
     const origin=req.get('origin');
     const expected=process.env.SITE_ORIGIN || 'https://practicai.ru';
     if (origin && origin!==expected && origin!=='http://localhost:3000') return res.status(403).json({error:'Недопустимый источник запроса'});
-    if (!req.is('application/json') || req.get('x-requested-with')!=='PracticAI-CRM') return res.status(415).json({error:'Ожидается запрос CRM в формате JSON'});
+    if (!/^application\/json(?:;|$)/i.test(req.get('content-type')||'') || req.get('x-requested-with')!=='PracticAI-CRM') return res.status(415).json({error:'Ожидается запрос CRM в формате JSON'});
   }
   res.set('Cache-Control','no-store');
   next();
@@ -94,6 +96,8 @@ router.get('/diagnostics',async(_req,res)=>{
     checks.block_layout='ok';
     await db.query('SELECT id,status FROM contacts LIMIT 0');
     checks.contacts='ok';
+    await ensureScenarios();
+    checks.assistant_scenarios='ok';
   }
   catch (e) { checks.schema_creation=e.code||'error'; }
   return res.json({checks});
@@ -133,4 +137,29 @@ router.patch('/contacts/:id',async(req,res,next)=>{
   if(!['new','read','replied'].includes(req.body.status))return res.status(400).json({error:'Недопустимый статус'});
   try{const [r]=await db.execute('UPDATE contacts SET status=? WHERE id=?',[req.body.status,req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Обращение не найдено'});res.json({ok:true});}catch(e){next(e)}
 });
+
+router.get('/scenarios',async(_req,res,next)=>{
+  try{res.json({scenarios:await loadScenarios(),directions});}catch(e){next(e);}
+});
+router.post('/scenarios/preview',async(req,res)=>{
+  const {scenario,message}=req.body||{};
+  if(!validateScenario(scenario)||typeof message!=='string'||!message.trim()||message.length>800)return res.status(400).json({error:'Проверьте сценарий и тестовый вопрос'});
+  res.json(scenarioAnswer(message.trim(),[],[{...scenario,enabled:1}],scenario.direction));
+});
+function scenarioValues(d){return [d.slug,d.question.trim(),d.keywords.trim(),d.answer.trim(),d.direction,Number(d.enabled),d.priority];}
+router.post('/scenarios',async(req,res,next)=>{
+  if(!validateScenario(req.body))return res.status(400).json({error:'Проверьте поля сценария. Ключевые фразы: буквы, цифры, пробелы, дефис; одна фраза на строку.'});
+  try{await ensureScenarios();const [r]=await db.execute('INSERT INTO assistant_scenarios (slug,question,keywords,answer,direction,enabled,priority) VALUES (?,?,?,?,?,?,?)',scenarioValues(req.body));res.status(201).json({id:r.insertId});}
+  catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код сценария уже существует'});next(e);}
+});
+router.put('/scenarios/:id',async(req,res,next)=>{
+  if(!/^[1-9][0-9]{0,9}$/.test(req.params.id)||!validateScenario(req.body))return res.status(400).json({error:'Проверьте поля сценария'});
+  try{await ensureScenarios();const [r]=await db.execute('UPDATE assistant_scenarios SET slug=?,question=?,keywords=?,answer=?,direction=?,enabled=?,priority=? WHERE id=?',[...scenarioValues(req.body),req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Сценарий не найден'});res.json({ok:true});}
+  catch(e){if(e.code==='ER_DUP_ENTRY')return res.status(409).json({error:'Такой код сценария уже существует'});next(e);}
+});
+router.delete('/scenarios/:id',async(req,res,next)=>{
+  if(!/^[1-9][0-9]{0,9}$/.test(req.params.id))return res.status(400).json({error:'Недопустимый номер сценария'});
+  try{await ensureScenarios();const [r]=await db.execute('DELETE FROM assistant_scenarios WHERE id=?',[req.params.id]);if(!r.affectedRows)return res.status(404).json({error:'Сценарий не найден'});res.json({ok:true});}catch(e){next(e);}
+});
 module.exports={router,authenticate,ensureSchema};
+

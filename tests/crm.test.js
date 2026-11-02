@@ -1,0 +1,20 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const {JSDOM}=require('jsdom');
+const fs=require('node:fs');
+const {defaults,directions}=require('../consultant/engine');
+const tick=()=>new Promise(r=>setImmediate(r));
+test('CRM renders scenarios as text and previews unsaved draft without publishing',async()=>{
+ const requests=[];const dom=new JSDOM(fs.readFileSync('views/admin.html','utf8'),{url:'https://practicai.ru/admin',runScripts:'outside-only'});
+ dom.window.scrollTo=()=>{};dom.window.HTMLElement.prototype.scrollIntoView=()=>{};
+ dom.window.fetch=async(url,options={})=>{requests.push({url,options});let data={};if(url.endsWith('/content'))data={sections:[]};if(url.endsWith('/texts'))data={texts:{}};if(url.endsWith('/scenarios'))data={directions,scenarios:[{...defaults[0],id:1,answer:'<img src=x onerror=alert(1)>'}]};if(url.endsWith('/preview'))data={answer:'Несохранённый ответ'};return {ok:true,json:async()=>data};};
+ for(const script of dom.window.document.querySelectorAll('script'))require('node:vm').runInContext(script.textContent,dom.getInternalVMContext());
+ const d=dom.window.document;d.querySelector('#tab-scenarios').click();await tick();
+ assert.equal(d.querySelector('#scenarios-panel').classList.contains('hidden'),false);assert.equal(d.querySelector('#scenario-list img'),null);assert.match(d.querySelector('#scenario-list').textContent,/<img/);
+ d.querySelector('#scenario-list button').click();d.querySelector('#sc-answer').value='Черновик';d.querySelector('#sc-test').value='курс';
+ d.querySelector('#scenario-preview-form').dispatchEvent(new dom.window.Event('submit',{cancelable:true}));await tick();
+ const req=requests.find(x=>x.url.endsWith('/preview'));assert.equal(JSON.parse(req.options.body).scenario.answer,'Черновик');assert.equal(d.querySelector('#sc-preview').textContent,'Несохранённый ответ');
+ assert.equal(requests.filter(x=>['POST','PUT','DELETE'].includes(x.options.method)&&!x.url.endsWith('/preview')).length,0);
+ d.querySelector('#tab-content').click();assert.equal(d.querySelector('#scenarios-panel').classList.contains('hidden'),true);dom.window.close();
+});

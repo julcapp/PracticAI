@@ -212,6 +212,21 @@ jobs:
             --upload-file /tmp/cms-htaccess \
             "ftp://ftp7.hostland.ru/practicai.ru/htdocs/www/.htaccess"
 
+      - name: 🧭 Убрать статические копии из пути CMS
+        env:
+          DEPLOY_FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          # Hostland serves existing HTML directly before Apache/Passenger rules.
+          # Move the just-uploaded copies into private backups; Node owns these URLs.
+          for filename in index.html education.html courses/accountants.html; do
+            backup_name=${filename//\//-}
+            curl --fail --silent --show-error --max-time 30 \
+              --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+              --quote "RNFR /practicai.ru/htdocs/www/$filename" \
+              --quote "RNTO /practicai.ru/projects/cms-static-$GITHUB_RUN_ID-$backup_name" \
+              "ftp://ftp7.hostland.ru/" -o /dev/null
+          done
+
       - name: 📄 Проверить разделы на основном домене
         run: |
           for attempt in 1 2 3 4 5; do

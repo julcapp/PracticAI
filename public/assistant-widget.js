@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = '/assistant-widget.css'; document.head.append(css);
+  const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = '/assistant-widget.css?v=20261102-scenarios'; document.head.append(css);
   const root = document.createElement('aside'); root.className = 'pa-chat'; root.setAttribute('aria-label', 'Помощь с выбором обучения');
   root.innerHTML = `<button class="pa-chat-button" type="button" aria-expanded="false" aria-controls="pa-chat-panel">Помочь с выбором</button>
     <section class="pa-chat-panel" id="pa-chat-panel" aria-label="Консультант PracticAI" hidden>

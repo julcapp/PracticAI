@@ -164,6 +164,7 @@ jobs:
           exit 1
 
       - name: 🩺 Проверить состояние API после перезапуска
+        if: ${{ !cancelled() }}
         run: |
           for attempt in 1 2 3 4 5; do
             if curl --fail --silent --show-error --max-time 20 https://practicai.ru/api/health; then
@@ -174,6 +175,7 @@ jobs:
           exit 1
 
       - name: 🧩 Проверить редактор и стили CRM
+        if: ${{ !cancelled() }}
         env:
           DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
@@ -186,6 +188,7 @@ jobs:
           grep -q '.managed-section' blocks-live.css
 
       - name: 🩺 Проверить таблицы CRM
+        if: ${{ !cancelled() }}
         env:
           DEPLOY_ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
@@ -194,6 +197,7 @@ jobs:
           echo "$response" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const c=JSON.parse(s).checks;if(Object.values(c).some(v=>v!=="ok"))process.exit(1)})'
 
       - name: 📚 Проверить страницу бухгалтерского курса
+        if: ${{ !cancelled() }}
         run: |
           curl --fail --silent --show-error --max-time 30 https://practicai.ru/courses/accountants.html -o accountants-live.html
           grep -q 'id="pa-accountants"' accountants-live.html
@@ -202,6 +206,7 @@ jobs:
           grep -q '/courses/accountants.html' education-live.html
 
       - name: 🤖 Проверить ответ консультанта
+        if: ${{ !cancelled() }}
         run: |
           curl --fail --silent --show-error --max-time 40 https://practicai.ru/assistant-widget.js -o assistant-live.js
           grep -q '/api/assistant' assistant-live.js

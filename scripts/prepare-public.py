@@ -20,3 +20,10 @@ if 'src="/site-enhancements.js"' not in html:
     html = html.replace('</body>', '<script src="/site-enhancements.js" defer></script>\n</body>', 1)
 
 page.write_text(html)
+
+
+# Version the consultant bundle so returning browsers load the new widget.
+for public_page in (root / 'public').rglob('*.html'):
+    markup = public_page.read_text()
+    markup = markup.replace('src="/assistant-widget.js"', 'src="/assistant-widget.js?v=20261102-scenarios"')
+    public_page.write_text(markup)

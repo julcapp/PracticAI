@@ -226,6 +226,17 @@ jobs:
               --quote "RNTO /practicai.ru/projects/cms-static-$GITHUB_RUN_ID-$backup_name" \
               "ftp://ftp7.hostland.ru/" -o /dev/null
           done
+          # Passenger's configured public directory can also be served by nginx.
+          for appdir in www digital; do
+            for filename in index.html education.html courses/accountants.html; do
+              backup_name=${filename//\//-}
+              curl --fail --silent --show-error --max-time 30 \
+                --user "host1688282_practicai:$DEPLOY_FTP_PASSWORD" \
+                --quote "RNFR /practicai.ru/projects/$appdir/public/$filename" \
+                --quote "RNTO /practicai.ru/projects/$appdir/cms-static-$GITHUB_RUN_ID-$backup_name" \
+                "ftp://ftp7.hostland.ru/" -o /dev/null
+            done
+          done
 
       - name: 📄 Проверить разделы на основном домене
         run: |

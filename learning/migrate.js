@@ -2,18 +2,22 @@
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');
 const {databaseConfig}=require('./config');
 async function migrate(conn) {
- const sql=fs.readFileSync(path.join(__dirname,'migrations/001_learning.sql'),'utf8');
- const checksum=crypto.createHash('sha256').update(sql).digest('hex');
  const [[lock]]=await conn.query("SELECT GET_LOCK('practicai_learning_migration',10) AS acquired");
  if(Number(lock.acquired)!==1)throw new Error('Migration lock unavailable');
  try {
   await conn.query('CREATE TABLE IF NOT EXISTS lrn_schema_migrations (version INT UNSIGNED PRIMARY KEY, checksum CHAR(64) NOT NULL, applied_at DATETIME(3) NOT NULL) ENGINE=InnoDB');
-  const [[existing]]=await conn.execute('SELECT checksum FROM lrn_schema_migrations WHERE version=1');
-  if(existing){if(existing.checksum!==checksum)throw new Error('Applied migration checksum mismatch');return {applied:false};}
-  // No routines/triggers or semicolons in literals in this versioned DDL.
-  for(const statement of sql.replace(/^--.*$/gm,'').split(';').map(s=>s.trim()).filter(Boolean))await conn.query(statement);
-  await conn.execute('INSERT INTO lrn_schema_migrations VALUES (1,?,UTC_TIMESTAMP(3))',[checksum]);
-  return {applied:true};
+  let applied=false;
+  for(const filename of ['001_learning.sql','002_profile.sql']) {
+   const version=Number(filename.slice(0,3));
+   const sql=fs.readFileSync(path.join(__dirname,'migrations',filename),'utf8');
+   const checksum=crypto.createHash('sha256').update(sql).digest('hex');
+   const [[existing]]=await conn.execute('SELECT checksum FROM lrn_schema_migrations WHERE version=?',[version]);
+   if(existing){if(existing.checksum!==checksum)throw new Error('Applied migration checksum mismatch');continue;}
+   for(const statement of sql.replace(/^--.*$/gm,'').split(';').map(s=>s.trim()).filter(Boolean))await conn.query(statement);
+   await conn.execute('INSERT INTO lrn_schema_migrations VALUES (?,?,UTC_TIMESTAMP(3))',[version,checksum]);
+   applied=true;
+  }
+  return {applied};
  } finally {await conn.query("SELECT RELEASE_LOCK('practicai_learning_migration')");}
 }
 async function main(){

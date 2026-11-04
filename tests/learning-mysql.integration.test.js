@@ -33,6 +33,16 @@ test('isolated MySQL: migration, foreign keys, concurrency, rollback, persistenc
   const [[empty]]=await conn.execute('SELECT COUNT(*) n FROM lrn_access WHERE order_id=?',[retry.id]);assert.equal(empty.n,0);
   await conn.execute('DELETE FROM lrn_documents WHERE order_id=?',[retry.id]);
   assert.equal((await store.fulfillPayment(retryPayment,policy)).created,true);
+  const portal=require('../learning/portal-store').createPortalStore(pool);
+  await portal.saveProfile(user,{name:'Иван',phone:'+79138207050',telegram:'@ivan_user',preferredChannel:'telegram'});
+  const saved=await portal.getProfile(user);assert.equal(saved.phone,'+79138207050');assert.equal(saved.telegram,'ivan_user');assert.equal(saved.telegram_verified_at,null);
+  await conn.execute('UPDATE lrn_profiles SET telegram_verified_at=UTC_TIMESTAMP(3) WHERE user_id=?',[user]);
+  await portal.saveProfile(user,{name:'Иван',phone:'+79138207050',telegram:'@ivan_user',preferredChannel:'telegram'});
+  assert.ok((await portal.getProfile(user)).telegram_verified_at);
+  await portal.saveProfile(user,{name:'Иван',phone:'+79138207050',telegram:'@other_user',preferredChannel:'telegram'});
+  assert.equal((await portal.getProfile(user)).telegram_verified_at,null);
+  assert.equal((await portal.getCourses(randomUUID())).length,0);
+  assert.equal((await portal.getOrders(randomUUID())).length,0);
   const lesson=randomUUID();
   await assert.rejects(()=>conn.execute(`INSERT INTO lrn_lessons (id,course_id,title,body,sort_order,created_at,updated_at) VALUES (?,?,'Orphan','',1,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))`,[lesson,randomUUID()]));
  } finally {conn.release();await pool.end();}

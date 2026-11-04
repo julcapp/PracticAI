@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Мой кабинет · PracticAI</title><link rel="stylesheet" href="account.css"><script src="account.js" defer></script></head>
+<body><header><a href="/">PracticAI</a><span>Личный кабинет</span></header><main>
+<h1>Ваше обучение</h1><p class="intro">Курсы, заказы и удобные способы связи — в одном месте.</p>
+<p id="status" role="status" aria-live="polite">Загружаем данные…</p>
+<nav aria-label="Разделы кабинета"><a href="#courses">Мои курсы</a><a href="#profile">Профиль и связь</a><a href="#orders">Заказы</a></nav>
+<section id="courses"><h2>Мои курсы</h2><p>Доступ действует три календарных месяца с момента подтверждённой оплаты.</p><div id="course-list"></div></section>
+<section id="profile"><h2>Профиль и связь</h2><form id="profile-form"><fieldset disabled id="profile-fields">
+<div class="grid"><label>Имя<input name="name" autocomplete="name" maxlength="200" required></label>
+<label>Email для входа<input name="email" type="email" readonly><small>Подтверждение email и смена адреса оформляются отдельно.</small></label>
+<label>Номер телефона<input name="phone" type="tel" autocomplete="tel" placeholder="+7 913 000-00-00" required><small>Введите номер с кодом страны, начиная с +.</small></label></div>
+<h3>Каналы общения <span>необязательно</span></h3><p>Укажите один или несколько контактов. Подключение и подтверждение мессенджера выполняются отдельно.</p>
+<div class="grid"><label>Telegram<input name="telegram" placeholder="@username" maxlength="33"><small data-verified="telegram">Контакт не подтверждён</small></label>
+<label>MAX<input name="max" type="url" placeholder="https://max.ru/…" maxlength="500"><small data-verified="max">Контакт не подтверждён</small></label>
+<label>WhatsApp<input name="whatsapp" type="tel" placeholder="+7 913 000-00-00"><small data-verified="whatsapp">Контакт не подтверждён</small></label></div>
+<label>Предпочтительный канал<select name="preferredChannel"><option value="email">Электронная почта</option><option value="phone">Телефон</option><option value="telegram">Telegram</option><option value="max">MAX</option><option value="whatsapp">WhatsApp</option></select></label>
+<p class="notice">Сохранение контактов не подключает рекламные рассылки. Согласие на рекламу оформляется отдельно.</p>
+<button type="submit">Сохранить профиль</button></fieldset></form></section>
+<section id="orders"><h2>Заказы</h2><div id="order-list"></div><p>Фискальный чек и акт — отдельные документы. Их выдача будет подключена после настройки платёжного сервиса и шаблонов.</p></section>
+</main><footer>PracticAI · Учитесь в удобном темпе</footer></body></html>

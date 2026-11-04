@@ -1,0 +1,33 @@
+name: Learning module isolated database tests
+on:
+  push:
+    branches: [feat/practicai-learning]
+  pull_request:
+    paths: ['learning/**', 'tests/learning*', '.github/workflows/learning-tests.yml']
+jobs:
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: learning_ci_only
+          MYSQL_DATABASE: practicai_learning_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -plearning_ci_only"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      LEARNING_INTEGRATION: '1'
+      LEARNING_DB_HOST: 127.0.0.1
+      LEARNING_DB_NAME: practicai_learning_test
+      LEARNING_DB_USER: root
+      LEARNING_DB_PASSWORD: learning_ci_only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+          cache: npm
+      - run: npm ci
+      - run: npm test

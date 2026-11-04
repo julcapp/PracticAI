@@ -20,7 +20,7 @@ test('isolated MySQL: migration, foreign keys, concurrency, rollback, persistenc
   const results=await Promise.all(Array.from({length:5},()=>store.fulfillPayment(payment,policy)));
   assert.equal(results.filter(r=>r.created).length,1);
   const [[access]]=await conn.execute('SELECT * FROM lrn_access WHERE order_id=?',[id]);
-  assert.equal(access.ends_at,'2026-04-30 08:30:00.000');
+  assert.equal(new Date(access.ends_at.replace(' ','T')+'Z').toISOString(),'2026-04-30T08:30:00.000Z');
   for(const [table,count] of [['lrn_access',1],['lrn_documents',2],['lrn_mail_outbox',1],['lrn_events',1]]){
    const [[row]]=await conn.execute(`SELECT COUNT(*) n FROM ${table} WHERE order_id=?`,[id]);assert.equal(row.n,count);
   }

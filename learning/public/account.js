@@ -27,3 +27,5 @@
   try{await request('profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});await load();if(!status.classList.contains('error'))say('Профиль сохранён.');}catch(e){say(e.message,true);}finally{button.disabled=false;}
  });load();
 })();
+
+ document.getElementById("logout")?.addEventListener("click",async()=>{const r=await fetch("/api/learning/auth/logout",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:"{}"});if(r.ok)location.replace("/learning/login.html");});

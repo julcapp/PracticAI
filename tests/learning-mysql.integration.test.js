@@ -7,6 +7,15 @@ test('isolated MySQL: migration, foreign keys, concurrency, rollback, persistenc
   await migrate(conn);assert.equal((await migrate(conn)).applied,false);
   const user=randomUUID(),course=randomUUID();
   await conn.execute('INSERT INTO lrn_users (id,email,created_at) VALUES (?,?,UTC_TIMESTAMP(3))',[user,user+'@example.com']);
+  const auth=require('../learning/auth').createAuthService({store:require('../learning/auth').createAuthStore(pool),origin:'https://school.example'});
+  const token=new URL(await auth.issueLink(user)).hash.slice(7);
+  const sessions=await Promise.all(Array.from({length:4},()=>auth.redeem(token)));
+  assert.equal(sessions.filter(Boolean).length,1);
+  const session=sessions.find(Boolean);assert.equal(await auth.identify(session),user);
+  await auth.logout(session);assert.equal(await auth.identify(session),null);
+  const expired=new URL(await auth.issueLink(user)).hash.slice(7);
+  await conn.execute('UPDATE lrn_login_tokens SET expires_at=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 1 MINUTE) WHERE user_id=?',[user]);
+  assert.equal(await auth.redeem(expired),null);
   await conn.execute(`INSERT INTO lrn_courses (id,slug,title,description,amount_kopecks,created_at,updated_at) VALUES (?,?,?, ?,1999000,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))`,[course,course,'Test course','Description']);
   async function makeOrder(){
    const id=randomUUID(),pid=randomUUID();

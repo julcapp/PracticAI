@@ -7,7 +7,7 @@ async function migrate(conn) {
  try {
   await conn.query('CREATE TABLE IF NOT EXISTS lrn_schema_migrations (version INT UNSIGNED PRIMARY KEY, checksum CHAR(64) NOT NULL, applied_at DATETIME(3) NOT NULL) ENGINE=InnoDB');
   let applied=false;
-  for(const filename of ['001_learning.sql','002_profile.sql']) {
+  for(const filename of ['001_learning.sql','002_profile.sql','003_auth.sql']) {
    const version=Number(filename.slice(0,3));
    const sql=fs.readFileSync(path.join(__dirname,'migrations',filename),'utf8');
    const checksum=crypto.createHash('sha256').update(sql).digest('hex');

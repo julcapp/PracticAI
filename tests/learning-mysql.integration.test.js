@@ -28,6 +28,19 @@ test('isolated MySQL: migration, foreign keys, concurrency, rollback, persistenc
   const policy={shopId:'123',testMode:true,now:new Date('2026-11-04T12:00:00Z')};
   const results=await Promise.all(Array.from({length:5},()=>store.fulfillPayment(payment,policy)));
   assert.equal(results.filter(r=>r.created).length,1);
+  const lessonId=randomUUID();
+  await conn.execute("INSERT INTO lrn_lessons (id,course_id,title,body,sort_order,status,created_at,updated_at) VALUES (?,?,'Lesson','Private text',1,'published',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",[lessonId,course]);
+  const lessons=require('../learning/lessons').createLessonStore(pool);
+  assert.equal(await lessons.getLesson(user,course,lessonId),null); // expired grant
+  await conn.execute('UPDATE lrn_access SET starts_at=DATE_SUB(UTC_TIMESTAMP(3),INTERVAL 1 DAY),ends_at=DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 1 DAY) WHERE order_id=?',[id]);
+  assert.equal((await lessons.getLesson(user,course,lessonId)).body,'Private text');
+  assert.equal(await lessons.getLesson(randomUUID(),course,lessonId),null);
+  await conn.execute("UPDATE lrn_lessons SET status='draft' WHERE id=?",[lessonId]);
+  assert.equal(await lessons.getLesson(user,course,lessonId),null);
+  await conn.execute("UPDATE lrn_lessons SET status='published' WHERE id=?",[lessonId]);
+  await conn.execute("UPDATE lrn_access SET status='revoked' WHERE order_id=?",[id]);
+  assert.equal(await lessons.getLesson(user,course,lessonId),null);
+  await conn.execute("UPDATE lrn_access SET status='active',starts_at='2026-01-31 08:30:00',ends_at='2026-04-30 08:30:00' WHERE order_id=?",[id]);
   const [[access]]=await conn.execute('SELECT * FROM lrn_access WHERE order_id=?',[id]);
   assert.equal(new Date(access.ends_at.replace(' ','T')+'Z').toISOString(),'2026-04-30T08:30:00.000Z');
   for(const [table,count] of [['lrn_access',1],['lrn_documents',2],['lrn_mail_outbox',1],['lrn_events',1]]){

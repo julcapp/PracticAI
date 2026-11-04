@@ -16,7 +16,7 @@
    const [p,courses,orders]=await Promise.all([request('profile'),request('courses'),request('orders')]);
    for(const key of ['name','email','phone','telegram','max','whatsapp','preferredChannel'])form.elements.namedItem(key).value=p[key]||'';
    for(const key of ['telegram','max','whatsapp'])document.querySelector('[data-verified="'+key+'"]').textContent=p[key+'_verified_at']?'Контакт подтверждён':'Контакт не подтверждён';
-   list('#course-list',courses,'Здесь появятся ваши оплаченные курсы.',(root,c)=>{text(root,'h3',c.title);text(root,'p',labels[c.access_status]||'Статус уточняется');text(root,'p','Доступ до '+date(c.ends_at));});
+   list('#course-list',courses,'Здесь появятся ваши оплаченные курсы.',(root,c)=>{text(root,'h3',c.title);text(root,'p',labels[c.access_status]||'Статус уточняется');text(root,'p','Доступ до '+date(c.ends_at));if(c.access_status==='active'){const link=document.createElement('a');link.href='course.html?id='+encodeURIComponent(c.course_id);link.textContent='Открыть уроки';root.append(link);}});
    list('#order-list',orders,'У вас пока нет заказов.',(root,o)=>{text(root,'h3',o.course_title);text(root,'p',new Intl.NumberFormat('ru-RU',{style:'currency',currency:o.currency}).format(o.amount_kopecks/100)+' · '+(labels[o.status]||'Статус уточняется'));});
    fields.disabled=false;say('');
   }catch(e){say(e.message,true);}

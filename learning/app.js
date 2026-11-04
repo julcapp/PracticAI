@@ -1,4 +1,5 @@
 'use strict';
+const {createLessonStore,createLessonRouter}=require('./lessons');
 const express=require('express');const helmet=require('helmet');const path=require('node:path');
 const {createAuthService,createAuthStore}=require('./auth');
 const {createLoginRouter,sessionAuthentication}=require('./login-routes');
@@ -11,6 +12,7 @@ function createLearningApp({pool,origin,sendLink,onDeliveryError}){
  const auth=createAuthService({store:createAuthStore(pool),origin});
  app.use('/api/learning/auth',createLoginRouter({auth,origin,sendLink,onDeliveryError,findUser:async email=>{const [[user]]=await pool.execute('SELECT id,email FROM lrn_users WHERE email=?',[email]);return user;}}));
  app.use('/api/learning/me',createPortalRouter({store:createPortalStore(pool),authenticate:sessionAuthentication(auth),origin}));
+ app.use('/api/learning/courses',createLessonRouter({store:createLessonStore(pool),authenticate:sessionAuthentication(auth)}));
  app.use('/learning',express.static(path.join(__dirname,'public'),{index:false,etag:false}));
  app.use((error,_req,res,_next)=>{const status=error.status===413?413:error instanceof SyntaxError?400:500;res.status(status).json({error:status===500?'Сервис временно недоступен':'Некорректный запрос'});});
  return app;

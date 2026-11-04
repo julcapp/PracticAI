@@ -1,0 +1,4 @@
+.protected-viewer{position:relative;min-height:24rem;overflow:hidden}
+#watermark{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-around;gap:3rem;pointer-events:none;z-index:2;overflow:hidden}
+#watermark span{display:block;transform:rotate(-16deg);font-size:.85rem;opacity:.2;overflow-wrap:anywhere;color:#284739;text-align:center}
+@media print{.protected-viewer,#lessons{display:none!important}main::after{content:'Печать учебных материалов недоступна. Материалы предназначены только для просмотра в личном кабинете.'}}

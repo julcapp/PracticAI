@@ -14,7 +14,7 @@ function createLessonRouter({store,authenticate}){
  const router=express.Router();router.use(authenticate,(q,s,n)=>{s.set('Cache-Control','no-store');if(!q.learningUser?.id)return s.status(401).json({error:'Требуется вход'});n();});
  const handle=fn=>(q,s,n)=>Promise.resolve(fn(q,s)).catch(n);
  router.get('/:courseId/lessons',handle(async(q,s)=>s.json(await store.getLessons(q.learningUser.id,q.params.courseId))));
- router.get('/:courseId/lessons/:lessonId',handle(async(q,s)=>{const lesson=await store.getLesson(q.learningUser.id,q.params.courseId,q.params.lessonId);if(!lesson)return s.status(404).json({error:'Урок недоступен. Проверьте срок доступа в кабинете.'});s.json(lesson);}));
+ router.get('/:courseId/lessons/:lessonId',handle(async(q,s)=>{const lesson=await store.getLesson(q.learningUser.id,q.params.courseId,q.params.lessonId);if(!lesson)return s.status(404).json({error:'Урок недоступен. Проверьте срок доступа в кабинете.'});s.json({...lesson,viewerMark:'Личный доступ · '+q.learningUser.id,viewedAt:new Date().toISOString()});}));
  return router;
 }
 module.exports={createLessonStore,createLessonRouter};
